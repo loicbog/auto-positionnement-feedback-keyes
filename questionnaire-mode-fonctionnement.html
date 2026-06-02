@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Identifier votre mode de fonctionnement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* =========================
+     Design tokens
+     ========================= */
+  :root {
+    --bg: #f5f6f8;
+    --bg-card: #ffffff;
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --ink-muted: #8a8a8a;
+    --line: #e8eaed;
+    --line-strong: #d0d4d9;
+    --accent: #007CB8;
+    --accent-dark: #005d8a;
+
+    /* Couleurs Insights */
+    --c-blue:   #2b6cb0;
+    --c-green:  #38a169;
+    --c-yellow: #ecc94b;
+    --c-red:    #e53e3e;
+
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+    --shadow-soft: 0 1px 2px rgba(0,0,0,0.03);
+
+    --font-display: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-body: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Subtle paper texture */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(ellipse at top left, rgba(255,255,255,0.4), transparent 60%),
+      radial-gradient(ellipse at bottom right, rgba(0,0,0,0.02), transparent 60%);
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* =========================
+     Sélecteur de langue
+     ========================= */
+  .lang-switcher {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .lang-btn {
+    padding: 6px 14px;
+    background: transparent;
+    color: var(--ink-muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .lang-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .lang-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  /* =========================
+     Logo zone
+     ========================= */
+  .logo-zone {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .logo-zone img,
+  .logo-zone svg {
+    max-height: 80px;
+    max-width: 80px;
+    width: auto;
+    height: auto;
+    border-radius: 12px;
+  }
+
+  .logo-placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    height: 70px;
+    border: 1.5px dashed var(--line-strong);
+    border-radius: 8px;
+    color: var(--ink-muted);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+  }
+
+  /* =========================
+     Header
+     ========================= */
+  .brand {
+    text-align: center;
+    margin-bottom: 32px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-size: 11px;
+    color: var(--ink-muted);
+  }
+
+  .brand::before, .brand::after {
+    content: "";
+    display: inline-block;
+    width: 28px;
+    height: 1px;
+    background: var(--line-strong);
+    vertical-align: middle;
+    margin: 0 12px;
+  }
+
+  /* =========================
+     Card
+     ========================= */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 48px 40px;
+    animation: fadeIn 0.5s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* =========================
+     Intro screen
+     ========================= */
+  .intro h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(32px, 5vw, 44px);
+    line-height: 1.15;
+    margin: 0 0 12px;
+    letter-spacing: -0.01em;
+    color: var(--accent);
+  }
+
+  .intro .subtitle {
+    color: var(--ink-soft);
+    font-size: 17px;
+    margin: 0 0 32px;
+    max-width: 56ch;
+  }
+
+  .intro .meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding: 20px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin: 0 0 32px;
+  }
+
+  .intro .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+
+  .intro .meta-item svg {
+    width: 18px;
+    height: 18px;
+    color: var(--accent);
+  }
+
+  .intro .description {
+    color: var(--ink-soft);
+    margin: 0 0 32px;
+    font-size: 15px;
+  }
+
+  /* =========================
+     Buttons
+     ========================= */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    font-family: inherit;
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+    background: var(--accent-dark);
+    border-color: var(--accent-dark);
+    box-shadow: 0 4px 12px rgba(0, 124, 184, 0.25);
+  }
+
+  .btn:active { transform: translateY(0); }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .btn-ghost:hover {
+    background: rgba(0, 124, 184, 0.08);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: none;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+  }
+
+  /* =========================
+     Progress bar
+     ========================= */
+  .progress {
+    margin-bottom: 32px;
+  }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* =========================
+     Question screen
+     ========================= */
+  .question-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .question-number {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+  }
+
+  .question-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(24px, 4vw, 32px);
+    line-height: 1.3;
+    margin: 0;
+    letter-spacing: -0.01em;
+    color: var(--accent);
+  }
+
+  .question-hint {
+    color: var(--ink-muted);
+    font-size: 14px;
+    margin-top: 12px;
+  }
+
+  /* =========================
+     Slider
+     ========================= */
+  .slider-container {
+    padding: 40px 0 24px;
+  }
+
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 16px;
+  }
+
+  .slider-label {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--accent);
+    flex: 1;
+  }
+
+  .slider-label.right {
+    text-align: right;
+  }
+
+  .slider-wrap {
+    position: relative;
+    padding: 24px 0;
+  }
+
+  /* Tick marks */
+  .ticks {
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .tick {
+    width: 1px;
+    height: 8px;
+    background: var(--line-strong);
+  }
+
+  .tick.center {
+    height: 14px;
+    background: var(--ink-muted);
+  }
+
+  .slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 2px;
+    background: var(--line-strong);
+    border-radius: 2px;
+    outline: none;
+    position: relative;
+    z-index: 2;
+  }
+
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: grab;
+    border: 4px solid var(--bg-card);
+    box-shadow: 0 0 0 1px var(--accent), 0 4px 12px rgba(0, 124, 184, 0.25);
+    transition: transform 0.15s ease;
+  }
+
+  .slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+  }
+
+  .slider::-webkit-slider-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.15);
+  }
+
+  .slider::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: grab;
+    border: 4px solid var(--bg-card);
+    box-shadow: 0 0 0 1px var(--accent), 0 4px 12px rgba(0, 124, 184, 0.25);
+    transition: transform 0.15s ease;
+  }
+
+  .slider-scale {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* Question transition */
+  .question-card {
+    animation: slideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* =========================
+     Results
+     ========================= */
+  .results h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 4.5vw, 40px);
+    margin: 0 0 12px;
+    text-align: center;
+    letter-spacing: -0.01em;
+    color: var(--accent);
+  }
+
+  .results .results-intro {
+    text-align: center;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  .disclaimer {
+    background: #fdf6e3;
+    border-left: 3px solid #d4a843;
+    padding: 14px 18px;
+    margin: 24px 0 40px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+
+  .disclaimer strong {
+    color: var(--ink);
+  }
+
+  /* Color disk */
+  .disk-section {
+    margin: 40px 0;
+    text-align: center;
+  }
+
+  .disk-section h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 24px;
+    margin: 0 0 24px;
+  }
+
+  .disk-wrapper {
+    display: inline-block;
+    position: relative;
+  }
+
+  .disk-svg {
+    display: block;
+    max-width: 380px;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Profile blocks */
+  .profile-block {
+    margin: 32px 0;
+    padding: 28px;
+    background: var(--bg);
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+  }
+
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .profile-axis {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-muted);
+  }
+
+  .profile-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 26px;
+    margin: 0 0 12px;
+    letter-spacing: -0.01em;
+    color: var(--accent);
+  }
+
+  .profile-score {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-left: auto;
+  }
+
+  .profile-score strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .profile-description ul {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--ink-soft);
+    list-style: none;
+  }
+
+  .profile-description li {
+    margin-bottom: 8px;
+    position: relative;
+    padding-left: 18px;
+  }
+
+  .profile-description li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .profile-description li:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Color result */
+  .color-label-top {
+    text-align: center;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-muted);
+    margin: 32px 0 14px;
+  }
+
+  .color-result-wrapper {
+    display: grid;
+    gap: 12px;
+    margin: 0 0 24px;
+  }
+
+  .color-result-wrapper.count-1 {
+    grid-template-columns: 1fr;
+  }
+
+  .color-result-wrapper.count-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .color-result-wrapper.count-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .color-block {
+    padding: 28px 20px;
+    border-radius: var(--radius);
+    color: #fff;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .color-block::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+    pointer-events: none;
+  }
+
+  .color-block.green { background: var(--c-green); }
+  .color-block.blue  { background: var(--c-blue); }
+  .color-block.red   { background: var(--c-red); }
+  .color-block.yellow {
+    background: var(--c-yellow);
+    color: #1a1a1a;
+  }
+
+  .color-block .name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(24px, 4vw, 36px);
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+
+  /* Quand il y a 4 blocs, on réduit un peu la taille */
+  .color-result-wrapper.count-4 .color-block {
+    padding: 20px 16px;
+  }
+  .color-result-wrapper.count-4 .color-block .name {
+    font-size: clamp(20px, 3vw, 28px);
+  }
+
+  .atypique-notice {
+    background: #fdf6e3;
+    border-left: 3px solid #d4a843;
+    padding: 14px 18px;
+    margin: 0 0 32px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+
+  .atypique-notice strong {
+    color: var(--ink);
+  }
+
+  .results-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+
+  /* =========================
+     Responsive
+     ========================= */
+  @media (max-width: 600px) {
+    .app { padding: 24px 16px 60px; }
+    .card { padding: 32px 24px; }
+    .slider-label { font-size: 18px; }
+    .slider-labels { gap: 12px; }
+    .profile-header { flex-wrap: wrap; }
+    .profile-score { margin-left: 0; }
+    .color-block .name { font-size: 22px; }
+    .color-result-wrapper.count-4 { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* =========================
+     Utility
+     ========================= */
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sélecteur de langue -->
+  <div class="lang-switcher" role="group" aria-label="Sélection de la langue">
+    <button class="lang-btn active" data-lang="fr" type="button">FR</button>
+    <button class="lang-btn" data-lang="en" type="button">EN</button>
+    <button class="lang-btn" data-lang="nl" type="button">NL</button>
+  </div>
+
+  <!-- ==========================================================
+       LOGO - Le logo est encodé en base64 directement dans le HTML.
+       Pour le remplacer :
+       1. Convertir votre image en base64 (sites comme base64-image.de)
+       2. Remplacer la longue chaîne après "base64," dans le src ci-dessous
+       Le logo est centré et limité à 80px de hauteur.
+       ========================================================== -->
+  <div class="logo-zone">
+    <img src="data:image/jpeg;base64,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" alt="NRB">
+  </div>
+
+  <div class="brand" data-i18n="brand">Outil pédagogique</div>
+
+  <!-- ============== INTRO ============== -->
+  <div id="screen-intro" class="card intro">
+    <h1 data-i18n="intro.title">Identifier votre mode de fonctionnement</h1>
+    <p class="subtitle" data-i18n="intro.subtitle">Un court questionnaire pour mieux comprendre comment vous exprimez votre énergie et prenez vos décisions.</p>
+
+    <div class="meta">
+      <div class="meta-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span data-i18n="intro.duration">5 minutes</span>
+      </div>
+      <div class="meta-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span data-i18n="intro.questions">18 questions</span>
+      </div>
+      <div class="meta-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span data-i18n="intro.anonymous">Anonyme</span>
+      </div>
+    </div>
+
+    <p class="description" data-i18n="intro.description">Pour chaque proposition, déplacez le curseur entre les deux options. Plus vous le rapprochez d'un côté, plus vous vous reconnaissez dans cette tendance.</p>
+
+    <div class="btn-row" style="justify-content: flex-start;">
+      <button id="btn-start" class="btn" data-i18n="btn.start">Commencer le questionnaire →</button>
+      <button id="btn-resume" class="btn btn-ghost hidden" data-i18n="btn.resume">Reprendre où j'en étais</button>
+    </div>
+  </div>
+
+  <!-- ============== QUESTION ============== -->
+  <div id="screen-question" class="card hidden">
+    <div class="progress">
+      <div class="progress-info">
+        <span id="progress-text">Question 1 sur 18</span>
+        <span id="progress-section">Dimension 1 / 2</span>
+      </div>
+      <div class="progress-bar">
+        <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <div id="question-card" class="question-card">
+      <div class="question-header">
+        <div class="question-number" id="q-number">Question 1</div>
+        <h2 class="question-title" data-i18n="question.title">Êtes-vous plutôt&nbsp;?</h2>
+        <div class="question-hint" data-i18n="question.hint">Déplacez le curseur vers la proposition qui vous correspond le mieux</div>
+      </div>
+
+      <div class="slider-container">
+        <div class="slider-labels">
+          <div class="slider-label" id="label-left">Silencieux</div>
+          <div class="slider-label right" id="label-right">Loquace</div>
+        </div>
+        <div class="slider-wrap">
+          <div class="ticks" id="ticks"></div>
+          <input type="range" id="slider" class="slider" min="0" max="10" value="5" step="1">
+        </div>
+        <div class="slider-scale">
+          <span data-i18n="scale.full">Tout à fait</span>
+          <span data-i18n="scale.neutral">Neutre</span>
+          <span data-i18n="scale.full">Tout à fait</span>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button id="btn-prev" class="btn btn-ghost" data-i18n="btn.prev">← Précédent</button>
+        <button id="btn-next" class="btn" data-i18n="btn.next">Suivant →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== RESULTS ============== -->
+  <div id="screen-results" class="card results hidden">
+    <h1 data-i18n="results.title">Vos résultats</h1>
+    <p class="results-intro" data-i18n="results.intro">Une photographie de vos tendances actuelles.</p>
+
+    <div class="disclaimer" data-i18n-html="results.disclaimer">
+      <strong>À noter&nbsp;:</strong> il s'agit d'un indicateur basé sur vos réponses. C'est une tendance, pas une vérité absolue. Accueillez les résultats avec ouverture et esprit critique.
+    </div>
+
+    <!-- Color result -->
+    <div class="color-label-top" data-i18n="results.dominantColor">Votre couleur dominante</div>
+    <div id="color-result-wrapper" class="color-result-wrapper"></div>
+    <div id="atypique-notice" class="atypique-notice hidden" data-i18n-html="results.atypique">
+      <strong>Profil atypique :</strong> vos réponses se situent dans la zone d'équilibre sur les deux axes. Vous combinez les quatre tendances, sans qu'une couleur ne domine. Ce profil rare appelle une lecture nuancée — chaque couleur peut s'exprimer selon le contexte.
+    </div>
+
+    <!-- Disk -->
+    <div class="disk-section">
+      <h2 data-i18n="results.diskTitle">Votre position sur le disque des couleurs</h2>
+      <div class="disk-wrapper">
+        <svg class="disk-svg" viewBox="0 0 340 340" id="disk-svg">
+          <!-- Background circle (centered at 170,170 with r=140, leaving 30px margin for labels) -->
+          <circle cx="170" cy="170" r="140" fill="#fff" stroke="#e8eaed" stroke-width="1"/>
+
+          <!-- Quadrants -->
+          <path d="M 170 170 L 170 30 A 140 140 0 0 1 310 170 Z" fill="#e53e3e" opacity="0.85"/>
+          <path d="M 170 170 L 310 170 A 140 140 0 0 1 170 310 Z" fill="#ecc94b" opacity="0.85"/>
+          <path d="M 170 170 L 170 310 A 140 140 0 0 1 30 170 Z" fill="#38a169" opacity="0.85"/>
+          <path d="M 170 170 L 30 170 A 140 140 0 0 1 170 30 Z" fill="#2b6cb0" opacity="0.85"/>
+
+          <!-- Axes -->
+          <line x1="170" y1="30" x2="170" y2="310" stroke="#fff" stroke-width="2"/>
+          <line x1="30" y1="170" x2="310" y2="170" stroke="#fff" stroke-width="2"/>
+
+          <!-- Labels for quadrants -->
+          <text x="240" y="100" text-anchor="middle" fill="#fff" font-family="'Open Sans', sans-serif" font-size="14" font-weight="700" data-i18n="color.red">ROUGE</text>
+          <text x="240" y="245" text-anchor="middle" fill="#1a1a1a" font-family="'Open Sans', sans-serif" font-size="14" font-weight="700" data-i18n="color.yellow">JAUNE</text>
+          <text x="100" y="245" text-anchor="middle" fill="#fff" font-family="'Open Sans', sans-serif" font-size="14" font-weight="700" data-i18n="color.green">VERT</text>
+          <text x="100" y="100" text-anchor="middle" fill="#fff" font-family="'Open Sans', sans-serif" font-size="14" font-weight="700" data-i18n="color.blue">BLEU</text>
+
+          <!-- Axis labels (outside the disk, in the 30px margin) -->
+          <text x="170" y="20" text-anchor="middle" fill="#4a4a4a" font-family="'Open Sans', sans-serif" font-size="12" font-weight="600" data-i18n="axis.thinking">Pensée</text>
+          <text x="170" y="328" text-anchor="middle" fill="#4a4a4a" font-family="'Open Sans', sans-serif" font-size="12" font-weight="600" data-i18n="axis.feeling">Sentiments</text>
+          <text x="15" y="170" text-anchor="middle" fill="#4a4a4a" font-family="'Open Sans', sans-serif" font-size="12" font-weight="600" transform="rotate(-90, 15, 170)" dominant-baseline="middle" data-i18n="axis.introversion">Introversion</text>
+          <text x="325" y="170" text-anchor="middle" fill="#4a4a4a" font-family="'Open Sans', sans-serif" font-size="12" font-weight="600" transform="rotate(90, 325, 170)" dominant-baseline="middle" data-i18n="axis.extraversion">Extraversion</text>
+
+          <!-- User point -->
+          <circle id="user-point" cx="170" cy="170" r="10" fill="#1a1a1a" stroke="#fff" stroke-width="3"/>
+          <circle id="user-point-pulse" cx="170" cy="170" r="10" fill="none" stroke="#1a1a1a" stroke-width="2" opacity="0.5">
+            <animate attributeName="r" from="10" to="22" dur="1.6s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" from="0.5" to="0" dur="1.6s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Profile blocks -->
+    <div id="profile-axis-1" class="profile-block">
+      <div class="profile-header">
+        <div>
+          <div class="profile-axis" data-i18n="axis.label1">Axe Introversion - Extraversion</div>
+          <h3 class="profile-title" id="profile-1-title">Introversion</h3>
+        </div>
+      </div>
+      <div class="profile-description" id="profile-1-desc"></div>
+    </div>
+
+    <div id="profile-axis-2" class="profile-block">
+      <div class="profile-header">
+        <div>
+          <div class="profile-axis" data-i18n="axis.label2">Axe Pensée - Sentiment</div>
+          <h3 class="profile-title" id="profile-2-title">Pensée</h3>
+        </div>
+      </div>
+      <div class="profile-description" id="profile-2-desc"></div>
+    </div>
+
+    <div class="results-actions">
+      <button id="btn-restart" class="btn btn-ghost" data-i18n="btn.restart">↻ Refaire le test</button>
+      <button id="btn-print" class="btn" data-i18n="btn.print">⎙ Imprimer mes résultats</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   I18N - TRADUCTIONS (FR / EN / NL)
+   ============================================================ */
+const I18N = {
+  fr: {
+    "brand": "Outil pédagogique",
+    "intro.title": "Identifier votre mode de fonctionnement",
+    "intro.subtitle": "Un court questionnaire pour mieux comprendre comment vous exprimez votre énergie et prenez vos décisions.",
+    "intro.duration": "5 minutes",
+    "intro.questions": "18 questions",
+    "intro.anonymous": "Anonyme",
+    "intro.description": "Pour chaque proposition, déplacez le curseur entre les deux options. Plus vous le rapprochez d'un côté, plus vous vous reconnaissez dans cette tendance.",
+    "btn.start": "Commencer le questionnaire →",
+    "btn.resume": "Reprendre où j'en étais",
+    "btn.prev": "← Précédent",
+    "btn.next": "Suivant →",
+    "btn.seeResults": "Voir mes résultats →",
+    "btn.restart": "↻ Refaire le test",
+    "btn.print": "⎙ Imprimer mes résultats",
+    "question.title": "Êtes-vous plutôt&nbsp;?",
+    "question.hint": "Déplacez le curseur vers la proposition qui vous correspond le mieux",
+    "question.label": "Question",
+    "question.of": "sur",
+    "dimension.ie": "Dimension Introversion / Extraversion",
+    "dimension.ps": "Dimension Pensée / Sentiments",
+    "scale.full": "Tout à fait",
+    "scale.neutral": "Neutre",
+    "results.title": "Vos résultats",
+    "results.intro": "Une photographie de vos tendances actuelles.",
+    "results.disclaimer": "<strong>À noter&nbsp;:</strong> il s'agit d'un indicateur basé sur vos réponses. C'est une tendance, pas une vérité absolue. Accueillez les résultats avec ouverture et esprit critique.",
+    "results.dominantColor": "Votre couleur dominante",
+    "results.diskTitle": "Votre position sur le disque des couleurs",
+    "results.atypique": "<strong>Profil atypique :</strong> vos réponses se situent dans la zone d'équilibre sur les deux axes. Vous combinez les quatre tendances, sans qu'une couleur ne domine. Ce profil rare appelle une lecture nuancée — chaque couleur peut s'exprimer selon le contexte.",
+    "axis.label1": "Axe Introversion - Extraversion",
+    "axis.label2": "Axe Pensée - Sentiment",
+    "axis.thinking": "Pensée",
+    "axis.feeling": "Sentiments",
+    "axis.introversion": "Introversion",
+    "axis.extraversion": "Extraversion",
+    "color.red": "ROUGE",
+    "color.yellow": "JAUNE",
+    "color.green": "VERT",
+    "color.blue": "BLEU",
+    "colorName.red": "Rouge",
+    "colorName.yellow": "Jaune",
+    "colorName.green": "Vert",
+    "colorName.blue": "Bleu",
+    // Items du questionnaire
+    "q1.left": "Silencieux",          "q1.right": "Loquace",
+    "q2.left": "Spectateur",          "q2.right": "Impliqué",
+    "q3.left": "Méditatif",           "q3.right": "Actif",
+    "q4.left": "Concentré sur la profondeur", "q4.right": "Concentré sur l'ampleur",
+    "q5.left": "Solitaire",           "q5.right": "Sociable",
+    "q6.left": "Réservé",             "q6.right": "Expansif",
+    "q7.left": "Réfléchi",            "q7.right": "Orienté vers l'action",
+    "q8.left": "Distant",             "q8.right": "Ouvert",
+    "q9.left": "Prudent",             "q9.right": "Audacieux",
+    "q10.left": "Formel",             "q10.right": "Informel",
+    "q11.left": "Impartial",          "q11.right": "Personnel",
+    "q12.left": "Analytique",         "q12.right": "Guidé par l'affectif",
+    "q13.left": "Détaché de l'événement", "q13.right": "Impliqué dans l'événement",
+    "q14.left": "Objectif",           "q14.right": "Subjectif",
+    "q15.left": "Obstiné",            "q15.right": "Souple",
+    "q16.left": "Esprit de compétition", "q16.right": "Détendu",
+    "q17.left": "Structuré",          "q17.right": "Ambivalent",
+    "q18.left": "Axé sur la tâche",   "q18.right": "Axé sur la relation",
+    // Profils Intro/Extra
+    "profile.tres-introverti": "Très introverti",
+    "profile.introverti": "Introverti",
+    "profile.plutot-introverti": "Plutôt introverti",
+    "profile.mixte-intro-extra": "Introverti et extraverti à la fois",
+    "profile.plutot-extraverti": "Plutôt extraverti",
+    "profile.extraverti": "Extraverti",
+    "profile.tres-extraverti": "Très extraverti",
+    // Profils Pensée/Sentiment
+    "profile.tres-pensee": "Très orienté Pensée",
+    "profile.pensee": "Pensée",
+    "profile.plutot-pensee": "Plutôt orienté Pensée",
+    "profile.mixte-pensee-sentiment": "Pensée et Sentiments à la fois",
+    "profile.plutot-sentiment": "Plutôt orienté Sentiments",
+    "profile.sentiment": "Sentiments",
+    "profile.tres-sentiment": "Très orienté Sentiments",
+    // Descriptions des profils (tableaux de phrases)
+    "desc.tres-introverti": [
+      "Vous exprimez votre énergie de manière fortement introvertie, profondément tourné vers la réflexion et le monde intérieur.",
+      "Vous préférez bien réfléchir aux problèmes pour les comprendre et prenez le temps de la réflexion avant d'agir ou de réagir.",
+      "Vous apprenez mieux par la réflexion et l'exercice mental.",
+      "Vous appréciez particulièrement les environnements calmes et les moments de solitude."
+    ],
+    "desc.introverti": [
+      "Vous exprimez votre énergie de manière introvertie et êtes davantage attiré par la réflexion ou le monde intérieur.",
+      "Vous préférez bien réfléchir aux problèmes pour les comprendre et prenez le temps de la réflexion avant d'agir ou de réagir.",
+      "Vous apprenez mieux par la réflexion et l'exercice mental."
+    ],
+    "desc.plutot-introverti": [
+      "Vous exprimez votre énergie plutôt de manière introvertie, avec une légère préférence pour la réflexion sur l'action.",
+      "Vous appréciez de réfléchir aux problèmes avant d'agir, tout en restant capable de vous impliquer dans des échanges.",
+      "Vous apprenez bien par la réflexion, mais une touche d'interaction peut enrichir votre compréhension."
+    ],
+    "desc.mixte-intro-extra": [
+      "Vous pouvez exprimer votre énergie soit de manière introvertie, soit de manière extravertie, selon le contexte.",
+      "Vous êtes autant tourné vers votre monde intérieur que vers votre environnement extérieur.",
+      "Quand vous exprimez votre énergie de manière extravertie, vous avez tendance à être dans l'action et à la discussion.",
+      "Quand vous l'exprimez de manière introvertie, vous êtes davantage dans la réflexion et l'introspection."
+    ],
+    "desc.plutot-extraverti": [
+      "Vous exprimez votre énergie plutôt de manière extravertie, avec une légère préférence pour l'action et l'échange.",
+      "Vous aimez discuter des problèmes pour les comprendre, tout en gardant des moments de réflexion personnelle.",
+      "Vous apprenez bien dans l'action et la discussion, sans négliger les phases de recul."
+    ],
+    "desc.extraverti": [
+      "Vous exprimez votre énergie de manière extravertie et êtes davantage tourné vers l'environnement extérieur.",
+      "Vous préférez discuter des problèmes pour les comprendre.",
+      "Vous apprenez mieux dans l'action et la discussion.",
+      "Vous avez une variété d'intérêts.",
+      "Vous avez tendance à agir et réagir rapidement, puis à prendre le temps de la réflexion ensuite."
+    ],
+    "desc.tres-extraverti": [
+      "Vous exprimez votre énergie de manière fortement extravertie, profondément tourné vers l'environnement et les autres.",
+      "Vous adorez discuter, échanger et confronter les idées pour les faire avancer.",
+      "Vous apprenez mieux dans l'action, le mouvement et la stimulation collective.",
+      "Vous avez une grande variété d'intérêts et débordez d'énergie au contact des autres.",
+      "Vous agissez et réagissez très rapidement, la réflexion vient souvent après."
+    ],
+    "desc.tres-pensee": [
+      "Vous prenez vos décisions essentiellement grâce à la Pensée, avec une forte rigueur analytique.",
+      "Vous cherchez systématiquement à vous extraire des situations pour les analyser de manière logique et objective.",
+      "Vous excellez dans la réalisation d'analyses claires et structurées.",
+      "Vous valorisez fortement les principes et l'objectivité plutôt que les relations.",
+      "Votre esprit critique aiguisé vous permet de détecter rapidement les erreurs et les manquements."
+    ],
+    "desc.pensee": [
+      "Vous prenez vos décisions principalement grâce à la Pensée.",
+      "Vous cherchez à vous extraire des situations pour les analyser de manière logique et objective.",
+      "Vous excellez dans la réalisation d'analyses claires.",
+      "Vous valorisez les principes et l'objectivité plutôt que les relations.",
+      "Votre esprit critique vous permet de détecter rapidement les erreurs et les manquements."
+    ],
+    "desc.plutot-pensee": [
+      "Vous prenez vos décisions plutôt grâce à la Pensée, avec une légère préférence pour l'analyse logique.",
+      "Vous cherchez à analyser les situations objectivement, tout en restant attentif à certains aspects humains.",
+      "Vous excellez dans les analyses claires, sans perdre de vue les enjeux relationnels.",
+      "Vous valorisez les principes, mais savez aussi tenir compte des relations quand c'est nécessaire."
+    ],
+    "desc.mixte-pensee-sentiment": [
+      "Vous prenez vos décisions en équilibrant la logique et l'impact humain.",
+      "Vous cherchez à comprendre une situation à la fois dans sa structure objective et dans ses dimensions relationnelles.",
+      "Vous excellez dans l'articulation entre analyse claire et compréhension des autres.",
+      "Vous valorisez à la fois les principes et les relations, l'objectivité et l'harmonie.",
+      "Votre esprit critique vous permet de détecter les erreurs tout en gardant une attention particulière aux valeurs et aux motivations humaines."
+    ],
+    "desc.plutot-sentiment": [
+      "Vous prenez vos décisions plutôt grâce aux Sentiments, avec une légère préférence pour la dimension humaine.",
+      "Vous cherchez à comprendre les motivations et les valeurs en jeu, tout en gardant un certain recul analytique.",
+      "Vous excellez dans la compréhension des autres, sans renoncer à la clarté logique.",
+      "Vous valorisez les relations, mais savez aussi vous appuyer sur des principes quand c'est nécessaire."
+    ],
+    "desc.sentiment": [
+      "Vous prenez vos décisions principalement grâce aux Sentiments.",
+      "Vous cherchez à être au cœur de la situation pour évaluer les valeurs et les motivations humaines.",
+      "Vous excellez dans la compréhension des autres.",
+      "Vous valorisez les relations et l'harmonie.",
+      "Vous avez tendance à apprécier plutôt qu'à détecter les erreurs ou les manquements."
+    ],
+    "desc.tres-sentiment": [
+      "Vous prenez vos décisions essentiellement grâce aux Sentiments, avec une grande sensibilité humaine.",
+      "Vous cherchez systématiquement à vous immerger dans les situations pour ressentir les valeurs et les motivations humaines.",
+      "Vous excellez profondément dans la compréhension des autres et l'écoute empathique.",
+      "Vous valorisez fortement les relations, l'harmonie et la qualité du lien.",
+      "Vous avez une grande tendance à apprécier et à valoriser plutôt qu'à détecter les erreurs."
+    ]
+  },
+
+  en: {
+    "brand": "Learning tool",
+    "intro.title": "Identify your operating mode",
+    "intro.subtitle": "A short questionnaire to better understand how you express your energy and make decisions.",
+    "intro.duration": "5 minutes",
+    "intro.questions": "18 questions",
+    "intro.anonymous": "Anonymous",
+    "intro.description": "For each statement, move the slider between the two options. The closer you place it to one side, the more you recognize yourself in that tendency.",
+    "btn.start": "Take the questionnaire →",
+    "btn.resume": "Resume where I left off",
+    "btn.prev": "← Previous",
+    "btn.next": "Next →",
+    "btn.seeResults": "See my results →",
+    "btn.restart": "↻ Retake the test",
+    "btn.print": "⎙ Print my results",
+    "question.title": "Are you more…?",
+    "question.hint": "Move the slider toward the option that best describes you",
+    "question.label": "Question",
+    "question.of": "of",
+    "dimension.ie": "Introversion / Extraversion dimension",
+    "dimension.ps": "Thinking / Feeling dimension",
+    "scale.full": "Fully",
+    "scale.neutral": "Neutral",
+    "results.title": "Your results",
+    "results.intro": "Based on the answers to the questions you were asked, here are the results!",
+    "results.disclaimer": "<strong>Note:</strong> This is an indicator based on your answers. It shows a tendency. Take the results into account but remain critical of them.",
+    "results.dominantColor": "Your dominant color",
+    "results.diskTitle": "Your position on the color wheel",
+    "results.atypique": "<strong>Atypical profile:</strong> your answers fall within the balanced zone on both axes. You combine all four tendencies, without any dominant color. This rare profile calls for a nuanced reading — each color may express itself depending on the context.",
+    "axis.label1": "Axis Introversion – Extraversion",
+    "axis.label2": "Axis Thinking – Feeling",
+    "axis.thinking": "Thinking",
+    "axis.feeling": "Feeling",
+    "axis.introversion": "Introversion",
+    "axis.extraversion": "Extraversion",
+    "color.red": "RED",
+    "color.yellow": "YELLOW",
+    "color.green": "GREEN",
+    "color.blue": "BLUE",
+    "colorName.red": "Red",
+    "colorName.yellow": "Yellow",
+    "colorName.green": "Green",
+    "colorName.blue": "Blue",
+    "q1.left": "Quiet",                          "q1.right": "Talkative",
+    "q2.left": "Spectator",                      "q2.right": "Involved",
+    "q3.left": "Meditative",                     "q3.right": "Active",
+    "q4.left": "Focused on depth",               "q4.right": "Focused on breadth",
+    "q5.left": "Solitary",                       "q5.right": "Sociable",
+    "q6.left": "Reserved",                       "q6.right": "Expansive",
+    "q7.left": "Thoughtful",                     "q7.right": "Action-oriented",
+    "q8.left": "Distant",                        "q8.right": "Open",
+    "q9.left": "Cautious",                       "q9.right": "Bold",
+    "q10.left": "Formal",                        "q10.right": "Informal",
+    "q11.left": "Impartial",                     "q11.right": "Personal",
+    "q12.left": "Analytical",                    "q12.right": "Guided by feelings",
+    "q13.left": "Detached from the event",       "q13.right": "Involved in the event",
+    "q14.left": "Objective",                     "q14.right": "Subjective",
+    "q15.left": "Stubborn",                      "q15.right": "Flexible",
+    "q16.left": "Competitive spirit",            "q16.right": "Relaxed",
+    "q17.left": "Structured",                    "q17.right": "Ambivalent",
+    "q18.left": "Task-oriented",                 "q18.right": "Relationship-oriented",
+    "profile.tres-introverti": "Strongly introverted",
+    "profile.introverti": "Introverted",
+    "profile.plutot-introverti": "Rather introverted",
+    "profile.mixte-intro-extra": "Introverted and extraverted at the same time",
+    "profile.plutot-extraverti": "Rather extraverted",
+    "profile.extraverti": "Extraverted",
+    "profile.tres-extraverti": "Strongly extraverted",
+    "profile.tres-pensee": "Strongly Thinking-oriented",
+    "profile.pensee": "Thinking",
+    "profile.plutot-pensee": "Rather Thinking-oriented",
+    "profile.mixte-pensee-sentiment": "Thinking and Feeling at the same time",
+    "profile.plutot-sentiment": "Rather Feeling-oriented",
+    "profile.sentiment": "Feeling",
+    "profile.tres-sentiment": "Strongly Feeling-oriented",
+    "desc.tres-introverti": [
+      "You express your energy in a strongly introverted way, deeply oriented toward reflection and the inner world.",
+      "You prefer to think carefully about problems to understand them and take time to reflect before acting or reacting.",
+      "You learn better through reflection and mental exercise.",
+      "You particularly enjoy calm environments and moments of solitude."
+    ],
+    "desc.introverti": [
+      "You express your energy in an introverted way and are more attracted to reflection or the inner world.",
+      "You prefer to think carefully about problems to understand them and take time to reflect before acting or reacting.",
+      "You learn better through reflection and mental exercise."
+    ],
+    "desc.plutot-introverti": [
+      "You express your energy rather in an introverted way, with a slight preference for reflection over action.",
+      "You appreciate thinking about problems before acting, while still being able to engage in exchanges.",
+      "You learn well through reflection, but a touch of interaction can enrich your understanding."
+    ],
+    "desc.mixte-intro-extra": [
+      "You can express your energy either in an introverted or extraverted way, depending on the context.",
+      "You are as focused on your inner world as on your external environment.",
+      "When you express your energy in an extraverted way, you tend to be active and engaged in discussion.",
+      "When you express it in an introverted way, you are more reflective and introspective."
+    ],
+    "desc.plutot-extraverti": [
+      "You express your energy rather in an extraverted way, with a slight preference for action and exchange.",
+      "You enjoy discussing problems to understand them, while keeping moments of personal reflection.",
+      "You learn well through action and discussion, without neglecting phases of stepping back."
+    ],
+    "desc.extraverti": [
+      "You express your energy in an extraverted way and are more oriented toward the external environment.",
+      "You prefer to discuss problems to understand them.",
+      "You learn better through action and discussion.",
+      "You have a variety of interests.",
+      "You tend to act and react quickly, then take time to reflect afterwards."
+    ],
+    "desc.tres-extraverti": [
+      "You express your energy in a strongly extraverted way, deeply oriented toward the environment and others.",
+      "You love discussing, exchanging and confronting ideas to move them forward.",
+      "You learn better through action, movement and collective stimulation.",
+      "You have a wide variety of interests and overflow with energy in contact with others.",
+      "You act and react very quickly, reflection often comes afterwards."
+    ],
+    "desc.tres-pensee": [
+      "You make decisions essentially through Thinking, with strong analytical rigor.",
+      "You systematically seek to step back from situations to analyze them logically and objectively.",
+      "You excel at making clear and structured analyses.",
+      "You strongly value principles and objectivity over relationships.",
+      "Your sharp critical mind allows you to quickly detect errors and shortcomings."
+    ],
+    "desc.pensee": [
+      "You make decisions mainly through Thinking.",
+      "You seek to step back from situations to analyze them logically and objectively.",
+      "You excel at making clear analyses.",
+      "You value principles and objectivity over relationships.",
+      "Your critical mind allows you to quickly detect errors and shortcomings."
+    ],
+    "desc.plutot-pensee": [
+      "You make decisions rather through Thinking, with a slight preference for logical analysis.",
+      "You seek to analyze situations objectively, while remaining attentive to certain human aspects.",
+      "You excel at clear analyses, without losing sight of relational stakes.",
+      "You value principles, but also know how to take relationships into account when necessary."
+    ],
+    "desc.mixte-pensee-sentiment": [
+      "You make decisions by balancing logic and human impact.",
+      "You seek to understand a situation both in its objective structure and in its relational dimensions.",
+      "You excel at articulating clear analysis and understanding others.",
+      "You value both principles and relationships, objectivity and harmony.",
+      "Your critical mind allows you to detect errors while paying special attention to human values and motivations."
+    ],
+    "desc.plutot-sentiment": [
+      "You make decisions rather through Feeling, with a slight preference for the human dimension.",
+      "You seek to understand the motivations and values at stake, while keeping a certain analytical distance.",
+      "You excel at understanding others, without giving up logical clarity.",
+      "You value relationships, but also know how to rely on principles when necessary."
+    ],
+    "desc.sentiment": [
+      "You make decisions mainly through Feeling.",
+      "You seek to be at the heart of the situation to assess human values and motivations.",
+      "You excel at understanding others.",
+      "You value relationships and harmony.",
+      "You tend to appreciate rather than detect errors or shortcomings."
+    ],
+    "desc.tres-sentiment": [
+      "You make decisions essentially through Feeling, with great human sensitivity.",
+      "You systematically seek to immerse yourself in situations to feel human values and motivations.",
+      "You excel deeply at understanding others and empathic listening.",
+      "You strongly value relationships, harmony and the quality of the bond.",
+      "You have a strong tendency to appreciate and value rather than detect errors."
+    ]
+  },
+
+  nl: {
+    "brand": "Leermiddel",
+    "intro.title": "Identificeer uw werkstijl",
+    "intro.subtitle": "Een korte vragenlijst om beter te begrijpen hoe u uw energie uitdrukt en beslissingen neemt.",
+    "intro.duration": "5 minuten",
+    "intro.questions": "18 vragen",
+    "intro.anonymous": "Anoniem",
+    "intro.description": "Verplaats voor elke stelling de schuifregelaar tussen de twee opties. Hoe dichter u hem bij één kant plaatst, hoe meer u zich in die tendens herkent.",
+    "btn.start": "Vul de vragenlijst in →",
+    "btn.resume": "Doorgaan waar ik was",
+    "btn.prev": "← Vorige",
+    "btn.next": "Volgende →",
+    "btn.seeResults": "Bekijk mijn resultaten →",
+    "btn.restart": "↻ Test opnieuw doen",
+    "btn.print": "⎙ Mijn resultaten afdrukken",
+    "question.title": "Bent u eerder…?",
+    "question.hint": "Verplaats de schuifregelaar naar de optie die het beste bij u past",
+    "question.label": "Vraag",
+    "question.of": "van",
+    "dimension.ie": "Dimensie Introversie / Extraversie",
+    "dimension.ps": "Dimensie Denken / Gevoel",
+    "scale.full": "Helemaal",
+    "scale.neutral": "Neutraal",
+    "results.title": "Uw resultaten",
+    "results.intro": "Volgens de antwoorden op de gestelde vragen, zijn dit de resultaten!",
+    "results.disclaimer": "<strong>Let op:</strong> dit is een indicatie op basis van uw antwoorden. Het is een tendens. Neem de resultaten mee, maar wees kritisch.",
+    "results.dominantColor": "Uw dominante kleur",
+    "results.diskTitle": "Uw positie op het kleurenwiel",
+    "results.atypique": "<strong>Atypisch profiel:</strong> uw antwoorden bevinden zich in de evenwichtszone op beide assen. U combineert de vier tendensen, zonder dat één kleur domineert. Dit zeldzame profiel vraagt om een genuanceerde lezing — elke kleur kan zich uiten afhankelijk van de context.",
+    "axis.label1": "As Introversie – Extraversie",
+    "axis.label2": "As Denken – Gevoel",
+    "axis.thinking": "Denken",
+    "axis.feeling": "Gevoel",
+    "axis.introversion": "Introversie",
+    "axis.extraversion": "Extraversie",
+    "color.red": "ROOD",
+    "color.yellow": "GEEL",
+    "color.green": "GROEN",
+    "color.blue": "BLAUW",
+    "colorName.red": "Rood",
+    "colorName.yellow": "Geel",
+    "colorName.green": "Groen",
+    "colorName.blue": "Blauw",
+    "q1.left": "Stil",                           "q1.right": "Spraakzaam",
+    "q2.left": "Toeschouwer",                    "q2.right": "Betrokken",
+    "q3.left": "Mediterend",                     "q3.right": "Actief",
+    "q4.left": "Gefocust op diepgang",           "q4.right": "Gefocust op breedte",
+    "q5.left": "Solistisch",                     "q5.right": "Sociaal",
+    "q6.left": "Geremd",                         "q6.right": "Uitbundig",
+    "q7.left": "Bedachtzaam",                    "q7.right": "Actiegericht",
+    "q8.left": "Distant",                        "q8.right": "Open",
+    "q9.left": "Voorzichtig",                    "q9.right": "Gedurfd",
+    "q10.left": "Formeel",                       "q10.right": "Informeel",
+    "q11.left": "Onpartijdig",                   "q11.right": "Persoonlijk",
+    "q12.left": "Analytisch",                    "q12.right": "Geleid door gevoel",
+    "q13.left": "Afstandelijk van het evenement","q13.right": "Betrokken bij het evenement",
+    "q14.left": "Objectief",                     "q14.right": "Subjectief",
+    "q15.left": "Koppig",                        "q15.right": "Flexibel",
+    "q16.left": "Competitief ingesteld",         "q16.right": "Ontspannen",
+    "q17.left": "Gestructureerd",                "q17.right": "Ambivalent",
+    "q18.left": "Taakgericht",                   "q18.right": "Relatiegericht",
+    "profile.tres-introverti": "Sterk introvert",
+    "profile.introverti": "Introvert",
+    "profile.plutot-introverti": "Eerder introvert",
+    "profile.mixte-intro-extra": "Introvert en extravert tegelijk",
+    "profile.plutot-extraverti": "Eerder extravert",
+    "profile.extraverti": "Extravert",
+    "profile.tres-extraverti": "Sterk extravert",
+    "profile.tres-pensee": "Sterk denken-georiënteerd",
+    "profile.pensee": "Denken",
+    "profile.plutot-pensee": "Eerder denken-georiënteerd",
+    "profile.mixte-pensee-sentiment": "Denken en Gevoel tegelijk",
+    "profile.plutot-sentiment": "Eerder gevoel-georiënteerd",
+    "profile.sentiment": "Gevoel",
+    "profile.tres-sentiment": "Sterk gevoel-georiënteerd",
+    "desc.tres-introverti": [
+      "U uit uw energie op een sterk introverte manier, diep gericht op reflectie en de innerlijke wereld.",
+      "U denkt graag goed na over problemen om ze te begrijpen en neemt de tijd om te reflecteren voordat u handelt of reageert.",
+      "U leert beter door reflectie en mentale oefening.",
+      "U houdt bijzonder van rustige omgevingen en momenten van afzondering."
+    ],
+    "desc.introverti": [
+      "U uit uw energie op een introverte manier en bent meer aangetrokken tot reflectie of de innerlijke wereld.",
+      "U denkt graag goed na over problemen om ze te begrijpen en neemt de tijd om te reflecteren voordat u handelt of reageert.",
+      "U leert beter door reflectie en mentale oefening."
+    ],
+    "desc.plutot-introverti": [
+      "U uit uw energie eerder op een introverte manier, met een lichte voorkeur voor reflectie boven actie.",
+      "U denkt graag na over problemen voordat u handelt, terwijl u toch in staat blijft deel te nemen aan uitwisselingen.",
+      "U leert goed door reflectie, maar wat interactie kan uw begrip verrijken."
+    ],
+    "desc.mixte-intro-extra": [
+      "U kunt uw energie zowel introvert als extravert uiten, afhankelijk van de context.",
+      "U bent evenzeer gericht op uw innerlijke wereld als op uw externe omgeving.",
+      "Wanneer u uw energie extravert uit, bent u geneigd tot actie en discussie.",
+      "Wanneer u uw energie introvert uit, bent u meer reflectief en introspectief."
+    ],
+    "desc.plutot-extraverti": [
+      "U uit uw energie eerder op een extraverte manier, met een lichte voorkeur voor actie en uitwisseling.",
+      "U bespreekt graag problemen om ze te begrijpen, terwijl u momenten van persoonlijke reflectie behoudt.",
+      "U leert goed door actie en discussie, zonder de reflectiefases te verwaarlozen."
+    ],
+    "desc.extraverti": [
+      "U uit uw energie op een extraverte manier en bent meer gericht op de externe omgeving.",
+      "U bespreekt graag problemen om ze te begrijpen.",
+      "U leert beter door actie en discussie.",
+      "U heeft een breed scala aan interesses.",
+      "U handelt en reageert meestal snel, en neemt daarna tijd voor reflectie."
+    ],
+    "desc.tres-extraverti": [
+      "U uit uw energie op een sterk extraverte manier, diep gericht op de omgeving en anderen.",
+      "U houdt ervan om te discussiëren, uit te wisselen en ideeën te confronteren om ze vooruit te helpen.",
+      "U leert beter door actie, beweging en collectieve stimulatie.",
+      "U heeft een grote variatie aan interesses en bruist van energie in contact met anderen.",
+      "U handelt en reageert zeer snel, reflectie komt vaak daarna."
+    ],
+    "desc.tres-pensee": [
+      "U neemt beslissingen voornamelijk op basis van Denken, met sterke analytische strengheid.",
+      "U probeert systematisch afstand te nemen van situaties om ze logisch en objectief te analyseren.",
+      "U blinkt uit in het maken van heldere en gestructureerde analyses.",
+      "U hecht sterk waarde aan principes en objectiviteit boven relaties.",
+      "Uw scherpe kritische geest stelt u in staat snel fouten en tekortkomingen te detecteren."
+    ],
+    "desc.pensee": [
+      "U neemt beslissingen voornamelijk op basis van denken.",
+      "U probeert afstand te nemen van situaties om ze logisch en objectief te analyseren.",
+      "U blinkt uit in het maken van heldere analyses.",
+      "U hecht meer waarde aan principes en objectiviteit dan aan relaties.",
+      "Uw kritische geest stelt u in staat snel fouten en tekortkomingen te detecteren."
+    ],
+    "desc.plutot-pensee": [
+      "U neemt beslissingen eerder op basis van Denken, met een lichte voorkeur voor logische analyse.",
+      "U probeert situaties objectief te analyseren, terwijl u aandacht houdt voor bepaalde menselijke aspecten.",
+      "U blinkt uit in heldere analyses, zonder de relationele aspecten uit het oog te verliezen.",
+      "U hecht waarde aan principes, maar weet ook rekening te houden met relaties wanneer nodig."
+    ],
+    "desc.mixte-pensee-sentiment": [
+      "U neemt beslissingen door logica en menselijke impact in balans te brengen.",
+      "U probeert een situatie zowel in haar objectieve structuur als in haar relationele dimensies te begrijpen.",
+      "U blinkt uit in het combineren van heldere analyse en begrip voor anderen.",
+      "U waardeert zowel principes als relaties, objectiviteit en harmonie.",
+      "Uw kritische geest stelt u in staat fouten te detecteren, terwijl u aandacht heeft voor menselijke waarden en motivaties."
+    ],
+    "desc.plutot-sentiment": [
+      "U neemt beslissingen eerder op basis van Gevoel, met een lichte voorkeur voor de menselijke dimensie.",
+      "U probeert de motivaties en waarden die op het spel staan te begrijpen, terwijl u een zekere analytische afstand behoudt.",
+      "U blinkt uit in het begrijpen van anderen, zonder de logische helderheid op te geven.",
+      "U hecht waarde aan relaties, maar weet ook op principes te steunen wanneer dat nodig is."
+    ],
+    "desc.sentiment": [
+      "U neemt beslissingen voornamelijk op basis van gevoel.",
+      "U probeert midden in de situatie te staan om menselijke waarden en motivaties te beoordelen.",
+      "U blinkt uit in het begrijpen van anderen.",
+      "U hecht waarde aan relaties en harmonie.",
+      "U bent eerder geneigd te waarderen dan fouten of tekortkomingen te zoeken."
+    ],
+    "desc.tres-sentiment": [
+      "U neemt beslissingen voornamelijk op basis van Gevoel, met grote menselijke gevoeligheid.",
+      "U probeert systematisch onder te dompelen in situaties om menselijke waarden en motivaties te voelen.",
+      "U blinkt diep uit in het begrijpen van anderen en empathisch luisteren.",
+      "U hecht sterk waarde aan relaties, harmonie en de kwaliteit van de band.",
+      "U heeft een sterke neiging om te waarderen en op prijs te stellen in plaats van fouten te detecteren."
+    ]
+  }
+};
+
+// Langue courante
+let currentLang = "fr";
+
+// Récupère un texte traduit
+function t(key) {
+  const dict = I18N[currentLang] || I18N.fr;
+  return dict[key] !== undefined ? dict[key] : (I18N.fr[key] || key);
+}
+
+// Applique la langue à toute la page
+function applyLang(lang) {
+  if (!I18N[lang]) lang = "fr";
+  currentLang = lang;
+  document.documentElement.lang = lang;
+
+  // Texte simple (data-i18n)
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    el.textContent = t(key);
+  });
+
+  // HTML (data-i18n-html) pour les éléments avec balises imbriquées
+  document.querySelectorAll("[data-i18n-html]").forEach(el => {
+    const key = el.getAttribute("data-i18n-html");
+    el.innerHTML = t(key);
+  });
+
+  // Mise à jour de l'attribut HTML question.title (qui contient &nbsp;)
+  const qTitle = document.querySelector('[data-i18n="question.title"]');
+  if (qTitle) qTitle.innerHTML = t("question.title");
+
+  // Boutons du sélecteur de langue
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.lang === lang);
+  });
+
+  // Re-render des éléments dynamiques si on est sur l'écran question ou résultats
+  if (!screenQuestion.classList.contains("hidden")) {
+    renderQuestion();
+  }
+  if (!screenResults.classList.contains("hidden")) {
+    refreshResults();
+  }
+
+  // Sauvegarder le choix
+  try { localStorage.setItem("modefonctionnement_lang", lang); } catch (e) {}
+}
+
+// Détection de la langue préférée au premier chargement
+function detectInitialLang() {
+  // 1. Choix déjà sauvegardé ?
+  try {
+    const saved = localStorage.getItem("modefonctionnement_lang");
+    if (saved && I18N[saved]) return saved;
+  } catch (e) {}
+  // 2. Détection automatique selon la langue du navigateur
+  //    - EN -> anglais, NL -> néerlandais, tout le reste -> français
+  const nav = (navigator.language || navigator.userLanguage || "fr").toLowerCase();
+  if (nav.startsWith("en")) return "en";
+  if (nav.startsWith("nl")) return "nl";
+  return "fr";
+}
+
+/* ============================================================
+   DONNÉES DU QUESTIONNAIRE
+   ============================================================ */
+const QUESTIONS = [
+  // Dimension 1 : Introversion <-> Extraversion (9 items)
+  { dim: 1, key: "q1" }, { dim: 1, key: "q2" }, { dim: 1, key: "q3" },
+  { dim: 1, key: "q4" }, { dim: 1, key: "q5" }, { dim: 1, key: "q6" },
+  { dim: 1, key: "q7" }, { dim: 1, key: "q8" }, { dim: 1, key: "q9" },
+  // Dimension 2 : Pensée <-> Sentiments (9 items)
+  { dim: 2, key: "q10" }, { dim: 2, key: "q11" }, { dim: 2, key: "q12" },
+  { dim: 2, key: "q13" }, { dim: 2, key: "q14" }, { dim: 2, key: "q15" },
+  { dim: 2, key: "q16" }, { dim: 2, key: "q17" }, { dim: 2, key: "q18" }
+];
+
+
+/* ============================================================
+   SCORING - Mapping plages -> clés profil
+   ============================================================ */
+function getProfileIntroExtra(score) {
+  if (score <= 13) return "tres-introverti";
+  if (score <= 26) return "introverti";
+  if (score <= 39) return "plutot-introverti";
+  if (score <= 50) return "mixte-intro-extra";
+  if (score <= 63) return "plutot-extraverti";
+  if (score <= 76) return "extraverti";
+  return "tres-extraverti";
+}
+
+function getProfilePenseeSentiment(score) {
+  if (score <= 13) return "tres-pensee";
+  if (score <= 26) return "pensee";
+  if (score <= 39) return "plutot-pensee";
+  if (score <= 50) return "mixte-pensee-sentiment";
+  if (score <= 63) return "plutot-sentiment";
+  if (score <= 76) return "sentiment";
+  return "tres-sentiment";
+}
+
+/**
+ * Détermine la ou les couleurs Insights basées sur les deux scores.
+ *
+ * Logique :
+ *  - Score d'axe < 40 = côté gauche clair (Introversion ou Pensée)
+ *  - Score d'axe > 50 = côté droit clair (Extraversion ou Sentiments)
+ *  - 40 <= Score <= 50 = axe mixte, les deux côtés sont retenus
+ *
+ *  Introversion + Pensée    = Bleu
+ *  Introversion + Sentiment = Vert
+ *  Extraversion + Pensée    = Rouge
+ *  Extraversion + Sentiment = Jaune
+ *
+ * Retourne un objet { colors: [...], atypique: boolean }
+ * colors est un tableau de { key, name } (1, 2 ou 4 éléments).
+ */
+function getColor(scoreIE, scorePS) {
+  // Côtés retenus pour chaque axe
+  const ieSides = []; // "intro" et/ou "extra"
+  if (scoreIE < 40) ieSides.push("intro");
+  else if (scoreIE > 50) ieSides.push("extra");
+  else { ieSides.push("intro"); ieSides.push("extra"); }
+
+  const psSides = []; // "pensee" et/ou "sentiment"
+  if (scorePS < 40) psSides.push("pensee");
+  else if (scorePS > 50) psSides.push("sentiment");
+  else { psSides.push("pensee"); psSides.push("sentiment"); }
+
+  // Map des combinaisons vers les couleurs
+  const colorMap = {
+    "intro-pensee":     { key: "blue",   name: "Bleu" },
+    "intro-sentiment":  { key: "green",  name: "Vert" },
+    "extra-pensee":     { key: "red",    name: "Rouge" },
+    "extra-sentiment":  { key: "yellow", name: "Jaune" }
+  };
+
+  // Produit cartésien des deux axes
+  const colors = [];
+  ieSides.forEach(ie => {
+    psSides.forEach(ps => {
+      colors.push(colorMap[ie + "-" + ps]);
+    });
+  });
+
+  // Profil atypique : les deux axes sont mixtes = 4 couleurs
+  const atypique = colors.length === 4;
+
+  return { colors, atypique };
+}
+
+/* ============================================================
+   STATE & PERSISTENCE
+   Utilise SCORM cmi.suspend_data si disponible, sinon localStorage
+   ============================================================ */
+const STORAGE_KEY = "modefonctionnement_v1";
+
+const state = {
+  answers: new Array(QUESTIONS.length).fill(null),
+  currentIndex: 0
+};
+
+function saveState() {
+  // Priorité SCORM si disponible
+  if (typeof SCORM !== "undefined" && SCORM.isAvailable()) {
+    SCORM.saveSuspendData(state);
+  }
+  // localStorage en complément / fallback
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+function loadState() {
+  // Essai SCORM d'abord
+  if (typeof SCORM !== "undefined" && SCORM.isAvailable()) {
+    const scormData = SCORM.loadSuspendData();
+    if (scormData && Array.isArray(scormData.answers) && scormData.answers.length === QUESTIONS.length) {
+      state.answers = scormData.answers;
+      state.currentIndex = scormData.currentIndex || 0;
+      return state.answers.some(a => a !== null);
+    }
+  }
+  // Fallback localStorage
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.answers) && parsed.answers.length === QUESTIONS.length) {
+      state.answers = parsed.answers;
+      state.currentIndex = parsed.currentIndex || 0;
+      return state.answers.some(a => a !== null);
+    }
+  } catch (e) {}
+  return false;
+}
+
+function clearState() {
+  state.answers = new Array(QUESTIONS.length).fill(null);
+  state.currentIndex = 0;
+  if (typeof SCORM !== "undefined" && SCORM.isAvailable()) {
+    SCORM.saveSuspendData(state);
+  }
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+}
+
+/* ============================================================
+   ÉLÉMENTS DOM
+   ============================================================ */
+const screenIntro = document.getElementById("screen-intro");
+const screenQuestion = document.getElementById("screen-question");
+const screenResults = document.getElementById("screen-results");
+
+const btnStart = document.getElementById("btn-start");
+const btnResume = document.getElementById("btn-resume");
+const btnPrev = document.getElementById("btn-prev");
+const btnNext = document.getElementById("btn-next");
+const btnRestart = document.getElementById("btn-restart");
+const btnPrint = document.getElementById("btn-print");
+
+const slider = document.getElementById("slider");
+const labelLeft = document.getElementById("label-left");
+const labelRight = document.getElementById("label-right");
+const qNumber = document.getElementById("q-number");
+const progressText = document.getElementById("progress-text");
+const progressSection = document.getElementById("progress-section");
+const progressFill = document.getElementById("progress-fill");
+const questionCard = document.getElementById("question-card");
+const ticksContainer = document.getElementById("ticks");
+
+/* ============================================================
+   NAVIGATION ENTRE ÉCRANS
+   ============================================================ */
+function showScreen(name) {
+  screenIntro.classList.add("hidden");
+  screenQuestion.classList.add("hidden");
+  screenResults.classList.add("hidden");
+  if (name === "intro") screenIntro.classList.remove("hidden");
+  if (name === "question") screenQuestion.classList.remove("hidden");
+  if (name === "results") screenResults.classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ============================================================
+   AFFICHAGE D'UNE QUESTION
+   ============================================================ */
+function renderTicks() {
+  ticksContainer.innerHTML = "";
+  for (let i = 0; i <= 10; i++) {
+    const t = document.createElement("div");
+    t.className = "tick" + (i === 5 ? " center" : "");
+    ticksContainer.appendChild(t);
+  }
+}
+
+function renderQuestion() {
+  const idx = state.currentIndex;
+  const q = QUESTIONS[idx];
+
+  // animation
+  questionCard.style.animation = "none";
+  questionCard.offsetHeight; // reflow
+  questionCard.style.animation = "";
+
+  labelLeft.textContent = t(q.key + ".left");
+  labelRight.textContent = t(q.key + ".right");
+  qNumber.textContent = `${t("question.label")} ${idx + 1}`;
+  progressText.textContent = `${t("question.label")} ${idx + 1} ${t("question.of")} ${QUESTIONS.length}`;
+  progressSection.textContent = q.dim === 1 ? t("dimension.ie") : t("dimension.ps");
+
+  const pct = ((idx) / QUESTIONS.length) * 100;
+  progressFill.style.width = pct + "%";
+
+  // Valeur du curseur : réponse précédente ou 5 par défaut
+  slider.value = state.answers[idx] !== null ? state.answers[idx] : 5;
+
+  // Boutons
+  btnPrev.style.visibility = idx === 0 ? "hidden" : "visible";
+  btnNext.textContent = idx === QUESTIONS.length - 1 ? t("btn.seeResults") : t("btn.next");
+}
+
+/* ============================================================
+   ÉVÉNEMENTS
+   ============================================================ */
+btnStart.addEventListener("click", () => {
+  clearState();
+  showScreen("question");
+  renderTicks();
+  renderQuestion();
+});
+
+btnResume.addEventListener("click", () => {
+  showScreen("question");
+  renderTicks();
+  renderQuestion();
+});
+
+btnNext.addEventListener("click", () => {
+  state.answers[state.currentIndex] = parseInt(slider.value, 10);
+  saveState();
+
+  if (state.currentIndex < QUESTIONS.length - 1) {
+    state.currentIndex++;
+    saveState();
+    renderQuestion();
+  } else {
+    // Fin du questionnaire
+    progressFill.style.width = "100%";
+    setTimeout(() => showResults(), 400);
+  }
+});
+
+btnPrev.addEventListener("click", () => {
+  if (state.currentIndex > 0) {
+    state.answers[state.currentIndex] = parseInt(slider.value, 10);
+    state.currentIndex--;
+    saveState();
+    renderQuestion();
+  }
+});
+
+btnRestart.addEventListener("click", () => {
+  clearState();
+  showScreen("intro");
+  btnResume.classList.add("hidden");
+});
+
+btnPrint.addEventListener("click", () => {
+  window.print();
+});
+
+/* ============================================================
+   CALCUL ET AFFICHAGE DES RÉSULTATS
+   ============================================================ */
+// Stocke le dernier résultat calculé pour pouvoir re-rendre lors d'un changement de langue
+let lastResults = null;
+
+function showResults() {
+  // Calcul des scores : on additionne les réponses par dimension
+  let scoreIE = 0; // Introversion-Extraversion
+  let scorePS = 0; // Pensée-Sentiments
+
+  QUESTIONS.forEach((q, i) => {
+    const val = state.answers[i];
+    if (q.dim === 1) scoreIE += val;
+    else scorePS += val;
+  });
+
+  lastResults = { scoreIE, scorePS };
+  refreshResults();
+  showScreen("results");
+
+  // Marquer le module comme complété dans le LMS
+  if (typeof SCORM !== "undefined" && SCORM.isAvailable()) {
+    SCORM.setCompleted();
+  }
+}
+
+// Réaffiche les résultats dans la langue courante (utilisé aussi au changement de langue)
+function refreshResults() {
+  if (!lastResults) return;
+  const { scoreIE, scorePS } = lastResults;
+
+  const keyIE = getProfileIntroExtra(scoreIE);
+  const keyPS = getProfilePenseeSentiment(scorePS);
+
+  // Titres des profils via i18n
+  document.getElementById("profile-1-title").textContent = t("profile." + keyIE);
+  document.getElementById("profile-1-desc").innerHTML =
+    "<ul>" + t("desc." + keyIE).map(d => `<li>${d}</li>`).join("") + "</ul>";
+
+  document.getElementById("profile-2-title").textContent = t("profile." + keyPS);
+  document.getElementById("profile-2-desc").innerHTML =
+    "<ul>" + t("desc." + keyPS).map(d => `<li>${d}</li>`).join("") + "</ul>";
+
+  // Couleur(s)
+  const result = getColor(scoreIE, scorePS);
+  const wrapper = document.getElementById("color-result-wrapper");
+  wrapper.className = "color-result-wrapper count-" + result.colors.length;
+  wrapper.innerHTML = result.colors.map(c =>
+    `<div class="color-block ${c.key}">
+      <div class="name">${t("colorName." + c.key)}</div>
+    </div>`
+  ).join("");
+
+  // Encart "profil atypique" si 4 couleurs
+  const notice = document.getElementById("atypique-notice");
+  if (result.atypique) {
+    notice.classList.remove("hidden");
+  } else {
+    notice.classList.add("hidden");
+  }
+
+  // Positionnement du point sur le disque
+  const xPercent = scoreIE / 90;
+  const yPercent = scorePS / 90;
+  const x = 40 + xPercent * 260;
+  const y = 40 + yPercent * 260;
+  const pt = document.getElementById("user-point");
+  const ptPulse = document.getElementById("user-point-pulse");
+  pt.setAttribute("cx", x);
+  pt.setAttribute("cy", y);
+  ptPulse.setAttribute("cx", x);
+  ptPulse.setAttribute("cy", y);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+(function init() {
+  // Initialiser SCORM avant tout
+  if (typeof SCORM !== "undefined") {
+    SCORM.init();
+  }
+
+  // Câbler les boutons de langue
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.addEventListener("click", () => applyLang(btn.dataset.lang));
+  });
+
+  // Appliquer la langue initiale (détection auto au 1er chargement)
+  applyLang(detectInitialLang());
+
+  renderTicks();
+  const hasProgress = loadState();
+  if (hasProgress && state.currentIndex < QUESTIONS.length) {
+    btnResume.classList.remove("hidden");
+  }
+})();
+</script>
+
+</body>
+</html>
