@@ -1659,7 +1659,7 @@ const I18N = {
 };
 
 const SUPPORTED_LANGS = ["fr", "en", "nl"];
-const DEFAULT_LANG = "en"; // Fallback si la langue navigateur n'est ni fr/nl
+const DEFAULT_LANG = "fr"; // Fallback francophone (NRB est belge)
 const LANG_STORAGE_KEY = "feedback_lang";
 const STATE_STORAGE_KEY = "feedback_state_v2";
 
@@ -1676,19 +1676,31 @@ const state = {
    LANG MANAGEMENT
    ============================================================ */
 function detectLanguage() {
-  // 1. localStorage (choix utilisateur précédent)
+  // 1. localStorage (choix utilisateur précédent) - priorité absolue
   try {
     const stored = localStorage.getItem(LANG_STORAGE_KEY);
-    if (stored && SUPPORTED_LANGS.includes(stored)) return stored;
+    if (stored && SUPPORTED_LANGS.includes(stored)) {
+      console.log("[i18n] Langue chargée depuis localStorage:", stored);
+      return stored;
+    }
   } catch (e) {}
 
-  // 2. Détection navigateur
-  const nav = (navigator.language || navigator.userLanguage || "").toLowerCase();
-  if (nav.startsWith("fr")) return "fr";
-  if (nav.startsWith("nl")) return "nl";
-  if (nav.startsWith("en")) return "en";
+  // 2. Détection navigateur via la liste complète des préférences
+  // navigator.languages est un array trié par préférence (ex: ["fr-BE", "fr", "en-US", "en"])
+  // navigator.language est juste la première (fallback si navigator.languages indispo)
+  const navLangs = navigator.languages || [navigator.language || navigator.userLanguage || ""];
+  console.log("[i18n] navigator.languages =", navLangs);
+
+  for (const raw of navLangs) {
+    const lang = String(raw).toLowerCase();
+    // Gestion des codes régionaux : fr-BE, fr-FR, fr-CA, nl-BE, nl-NL, en-US, en-GB...
+    if (lang.startsWith("fr")) { console.log("[i18n] Détecté: fr (via", raw, ")"); return "fr"; }
+    if (lang.startsWith("nl")) { console.log("[i18n] Détecté: nl (via", raw, ")"); return "nl"; }
+    if (lang.startsWith("en")) { console.log("[i18n] Détecté: en (via", raw, ")"); return "en"; }
+  }
 
   // 3. Fallback
+  console.log("[i18n] Aucune langue détectée, fallback:", DEFAULT_LANG);
   return DEFAULT_LANG;
 }
 
