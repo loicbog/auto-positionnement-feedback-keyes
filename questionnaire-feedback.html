@@ -1,0 +1,2149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NRB - Auto-positionnement sur le feedback</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-primary: #007CB8;
+    --color-primary-dark: #005a87;
+    --color-primary-light: #e6f3fa;
+    --color-text: #2c3e50;
+    --color-text-light: #5a6c7d;
+    --color-bg: #f5f7fa;
+    --color-card: #ffffff;
+    --color-border: #e1e8ed;
+    --color-success: #27ae60;
+    --color-warning: #f39c12;
+    --color-danger: #e74c3c;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --radius: 8px;
+    --radius-lg: 12px;
+    --transition: 0.2s ease-in-out;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 720px;
+    background: var(--color-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    margin: 0 auto;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: #1B2D51;
+    color: white;
+    padding: 44px 32px 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    position: relative;
+  }
+
+  .lang-selector {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-radius: 6px;
+    padding: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+  }
+
+  .lang-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.18s ease-in-out;
+  }
+
+  .lang-btn:hover { background: rgba(255, 255, 255, 0.15); color: white; }
+  .lang-btn.active { background: white; color: var(--color-primary-dark); }
+
+  .header-logo {
+    flex-shrink: 0;
+    width: 80px;
+    height: auto;
+    border-radius: 6px;
+  }
+
+  .header-text { flex: 1; min-width: 0; }
+  .header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 8px; }
+  .header p { font-size: 1rem; opacity: 0.95; }
+
+  /* ===== PROGRESS ===== */
+  .progress-wrapper {
+    padding: 16px 32px;
+    background: var(--color-primary-light);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+    margin-bottom: 8px;
+  }
+
+  .progress-info strong { color: var(--color-primary); }
+
+  .progress-bar {
+    height: 6px;
+    background: rgba(0, 124, 184, 0.15);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: 3px;
+    transition: width 0.3s ease-in-out;
+  }
+
+  .dimension-label {
+    display: inline-block;
+    padding: 2px 10px;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== CONTENT ===== */
+  .content { padding: 32px; }
+
+  .screen { display: none; animation: fadeIn 0.4s ease-in-out; }
+  .screen.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== INTRO ===== */
+  .intro-list { list-style: none; margin: 24px 0; }
+
+  .intro-list li {
+    padding: 12px 16px;
+    background: var(--color-primary-light);
+    border-left: 3px solid var(--color-primary);
+    border-radius: 6px;
+    margin-bottom: 10px;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .intro-list li::before {
+    content: "✓";
+    color: var(--color-primary);
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .intro-meta { display: flex; gap: 16px; margin: 20px 0; flex-wrap: wrap; }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--color-bg);
+    border-radius: 20px;
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+    font-weight: 500;
+  }
+
+  /* ===== QUESTION ===== */
+  .question-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 16px 0 20px;
+    line-height: 1.4;
+  }
+
+  .question-helper {
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+    font-style: italic;
+    margin-bottom: 16px;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--color-card);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+    font-size: 0.95rem;
+    color: var(--color-text);
+  }
+
+  .option:hover { border-color: var(--color-primary); background: var(--color-primary-light); }
+
+  .option input[type="radio"],
+  .option input[type="checkbox"] {
+    accent-color: var(--color-primary);
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .option.selected {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+    font-weight: 500;
+  }
+
+  /* ===== BUTTONS ===== */
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border);
+    gap: 12px;
+  }
+
+  .actions.center { justify-content: center; }
+
+  .btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary { background: var(--color-primary); color: white; }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-primary:disabled { background: #b0bec5; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+  }
+
+  .btn-secondary:hover { background: var(--color-primary-light); }
+
+  .btn-ghost { background: transparent; color: var(--color-text-light); }
+  .btn-ghost:hover { color: var(--color-primary); }
+
+  /* ===== RESULTS ===== */
+  .global-score-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .global-score-text h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+
+  .global-score-text .intro-text {
+    color: var(--color-text-light);
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+  }
+
+  .global-score-text .intro-list { margin: 0; }
+
+  .global-score-text .intro-list li {
+    background: transparent;
+    border-left: none;
+    padding: 6px 0;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .global-score-gauge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .global-score-gauge svg { width: 100%; max-width: 280px; height: auto; }
+
+  .gauge-label {
+    color: var(--color-primary);
+    font-weight: 700;
+    font-size: 1rem;
+    margin-top: 4px;
+    text-align: center;
+  }
+
+  .global-score-message {
+    margin-top: 12px;
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+    line-height: 1.5;
+    text-align: center;
+    font-style: italic;
+  }
+
+  .details-heading {
+    font-size: 1.1rem;
+    color: var(--color-text);
+    margin-bottom: 16px;
+  }
+
+  .dimensions-results {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .dimension-card {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .dimension-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dimension-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .dimension-score { display: flex; align-items: baseline; gap: 6px; }
+
+  .dimension-score-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+
+  .dimension-score-max { font-size: 0.875rem; color: var(--color-text-light); }
+
+  .dimension-progress-bar {
+    height: 8px;
+    background: var(--color-bg);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 12px 0 16px;
+  }
+
+  .dimension-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    border-radius: 4px;
+    transition: width 0.6s ease-in-out;
+  }
+
+  .level-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .level-1 { background: #ffeaa7; color: #8a6914; }
+  .level-2 { background: #b3e0ff; color: #004a73; }
+  .level-3 { background: #c8e6c9; color: #1e6b30; }
+
+  .dimension-description {
+    color: var(--color-text);
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+
+  .info-note {
+    background: var(--color-primary-light);
+    border-left: 3px solid var(--color-primary);
+    padding: 16px 20px;
+    border-radius: 6px;
+    margin: 24px 0;
+    font-size: 0.9rem;
+    color: var(--color-text);
+  }
+
+  .info-note strong {
+    color: var(--color-primary-dark);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 600px) {
+    body { padding: 0; }
+    .container { border-radius: 0; min-height: 100vh; }
+    .header { padding: 40px 20px 20px; gap: 16px; }
+    .header-logo { width: 56px; }
+    .lang-selector { top: 10px; right: 10px; }
+    .lang-btn { font-size: 0.7rem; padding: 4px 8px; }
+    .content, .progress-wrapper { padding-left: 20px; padding-right: 20px; }
+    .header h1 { font-size: 1.25rem; }
+    .header p { font-size: 0.9rem; }
+    .question-title { font-size: 1.1rem; }
+    .actions { flex-wrap: wrap; }
+    .btn { flex: 1; justify-content: center; padding: 12px 16px; }
+    .global-score-section { grid-template-columns: 1fr; gap: 16px; padding: 20px; }
+    .global-score-text h2 { font-size: 1.15rem; }
+    .global-score-gauge svg { max-width: 220px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ===== ÉCRAN INTRO ===== -->
+  <div id="screen-intro" class="screen active">
+    <div class="header">
+      <div class="lang-selector" role="group" aria-label="Language selector">
+        <button class="lang-btn" data-lang="fr">FR</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="nl">NL</button>
+      </div>
+      <img src="data:image/png;base64,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" alt="NRB" class="header-logo">
+      <div class="header-text">
+        <h1 data-i18n="intro_title"></h1>
+        <p data-i18n="intro_subtitle"></p>
+      </div>
+    </div>
+    <div class="content">
+      <p style="color: var(--color-text); margin-bottom: 16px;" data-i18n-html="intro_lead"></p>
+      <p style="color: var(--color-text-light); margin-bottom: 8px;" data-i18n="intro_dimensions_label"></p>
+      <ul class="intro-list" id="intro-dimensions"></ul>
+      <div class="intro-meta">
+        <div class="meta-item" data-i18n="meta_time"></div>
+        <div class="meta-item" data-i18n="meta_anonymous"></div>
+        <div class="meta-item" data-i18n="meta_questions"></div>
+      </div>
+      <div class="actions center">
+        <button id="btn-resume" class="btn btn-secondary" style="display:none;" data-i18n="btn_resume"></button>
+        <button id="btn-start" class="btn btn-primary" data-i18n="btn_start"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ÉCRAN QUESTION ===== -->
+  <div id="screen-question" class="screen">
+    <div class="header">
+      <div class="lang-selector" role="group" aria-label="Language selector">
+        <button class="lang-btn" data-lang="fr">FR</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="nl">NL</button>
+      </div>
+      <img src="data:image/png;base64,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" alt="NRB" class="header-logo">
+      <div class="header-text">
+        <h1 id="q-dimension-title"></h1>
+        <p id="q-dimension-subtitle"></p>
+      </div>
+    </div>
+    <div class="progress-wrapper">
+      <div class="progress-info">
+        <span><strong id="q-percent">0%</strong> <span id="q-completed-label"></span></span>
+        <span id="q-dim-progress"></span>
+      </div>
+      <div class="progress-bar">
+        <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
+      </div>
+    </div>
+    <div class="content">
+      <div id="q-helper" class="question-helper"></div>
+      <h2 id="q-title" class="question-title"></h2>
+      <div id="q-options" class="options"></div>
+      <div class="actions">
+        <button id="btn-prev" class="btn btn-ghost" data-i18n="btn_previous"></button>
+        <button id="btn-next" class="btn btn-primary" disabled></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ÉCRAN RÉSULTATS ===== -->
+  <div id="screen-results" class="screen">
+    <div class="header">
+      <div class="lang-selector" role="group" aria-label="Language selector">
+        <button class="lang-btn" data-lang="fr">FR</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="nl">NL</button>
+      </div>
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsBAMAAACLU5NGAAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAAAAGFBMVEX+//5hboUdLVIbLVMbLVEcLU8ZLVIZKEoG4ITeAAAc10lEQVR42u19a3Mb15nmc7p1IRyROAc0SUk0SQCM5Elkik1hFE8sW5fETu2YtizLI6VqlHLJnpGz2Z2dmszOzo/YVMX71dJW5EpVPkSMLFoWncrYFV1i74xjU2yStmSZJtAkQ4mkRPQBqQsoqPvsB1y6G+gGCAJcpbbQn4AGuvvB+z7nvZ33HJBn8ed4SKjBqsGqwarBqsGqwarBqsGqwarBqsGqwarBqsGqwarBqsGqwarBqsGqwarBqsGqwarB+n8ES6wWrDUruCYKQFaMhSiTu7kAMPzSJSPRo0NwEPpQpaUYchQwhg3OY/4DZ7sQAnvISoxEAGBiX6Cb32J6DOrpNhUUOkjVYJEVzCcyCI7AuI6dQWhBoA8gLIQomEjQh8ctQJfbkdgZ7Ps3AEDzgegg1ykAQil/eNJKcAMLB1Mn9eyJ5gN9j8IAI1Q8PFjSPAQ/dFy3nQoc+w1lnDJUCdZKKN8mkzuvOFAhfuJvEg2dRNf5wxuJcld8/wndeS5+4pXRVlq1kSiHV8Ct6HPHC6Ry7+rfTiKpL9U9NGk9aPrKRVfxXwZVvcAdrZBryzYQUQBgjFBdZ4+96faNOanbjyEyHjYnabdGpFugUlTu5oLoZXuA5UrLzBgsIAzppLvf/lk7ROe4hESgG8EF3hPQJiJdQCwK8FXiFtEBIOnzrW+e3HbBI56IN/zxxsszvntxrbG1w/g0LnePJIGwL1m2tJZttxgAGBOKWByZ9frt0n9/t16ujx0CUu8Zh4BU/7OqSYmf6FhVWIhzsVe86fmlx59oVPWDY+cFB8BI04G+lxMaWPnMXz4sQQDEOVmc9X6E9M8Xw605nwTCjqXO1UfMRNmwlsctjWp3F0Xz7NLkevHchSLR6vy3Wn9hQ3Dvyne++aeZTetnk6tCeQr/E9NLN9dO9uh3Pir2iDVPnXTIJfl/2r9+cmjmrm+VRqKI1/lm9G5MPjFU7Gt3r+Zr68ob06EZ+FbJbjVSLWrII+1dHXmUYyWMuvhZ5x/KD1uXR/koWzgIAOiHg/CB54KIflhi+Le8GivbnBaFpethLYiFhujO4Nj5dCC6/2e2a5uPRiceNO64f7LoU8nW7RgKAuC0SrDEoiImu4aeO8VzgahNNI/39oc1vx/Tz79Z/Bn/ctFvTClknFWH8ve4NDPz17974fiN3OizDcOWVy76ljb6CDGuH/6Pog8ZN/bNEEp0X3Vgbd68nu/+3cG3XHVE/utExywFAF/dZ0ZRw3T37/qFYCavEiwf7ptjHqjweJ35ZYAmAYB07P334uJ6smOGrC8DVol4KxhM/NodFdlvJJTJ9Gt/YiSoFbvNXPAykBBVsls8YVzc7PG85tO31UzBQch8w8vFjfFZimA5KWRRWPPzI70eg4y8ygYVNfPaUJQrxQd/tEMh5djUorCIsvALr48MQFVy1kLmR4uH//iDysvIG4pR3vzWkGe40Dz5yI77esZe+K7MPQg6bATz+XyOwRld+5ReRr5WjPLS1J2TXp/tbpjU/ZZpNe5ct1GHNR8AcMqey9488lFDtTKf2Ate5pu0XQwD1D9Ms5mHI/M3fkOhHzZPcFvd0KxCYGPGGEt2NP7Gy0pKTzUmAc7T2WrSvyBm1/Ecqr4vvz8nnv7tI3uuWtfHH79+Qw9fWTS3sWjyRtjn8/mSYb1MWIIH6tZde8IzEG2OBS7XJUEyOTShifa9GXKRf3hHSGK9T2fXxmxOaU04sm0b2/atjt+2b5wxbmwE8GVifZlKlJSEPnGgzztc3VAfdJxotxCPZzlnvjhgWdmbm4+nP35lTN03FLnQpknBsrlFZA5J87bcvYl8qkxPZa48cm6D3M0B4MXb5pM8q1ozQ1P9ePOhvpcvsKAWXJndMh/zDEQJUZ2/x5xOSWn2Nw8YUNKjc1rda+4tjJaunTh0Bl2f7+OgKxmJjpyesOeCyNX/iJY3sKRWTGeENRwkCQDAwgS93OFG3fiJY2OJLlmYZCXS2s7tEeaxT/v63nvjn2l2vCcKbrQXAJr7g6qaTZcAOk1dcW0hU6rCy1eigHjMjmpbH2Os/vT06xQAmqRAwX1aQwDIEabmEoog5GHzNbe7x98OT9TLK+LWnTM2e7BNi4QY6+zeMPAaAFBCC6KUyfcp0HwWgD+TURBArndX1Ozb+6laPixziNiylcCRLxZBGAPQev2nQGA/cDn/knYcY01HexjNlY0oMx5MD7jzeg4jXStx1eQ//T738h/eq38+dkPXuaT6rzRsnfs7DcZsfr4gdp870v3ZfeYTWQHVJWcfv9Yz7u4pxv9maa5hqWwlkgeWCg0jEtfTjk1jX989djoEl+mKsxtOJ0K52g4AAnO02/SIeGYHLpkL5RoIDhun92owOdMBJsLgdGwsfBmFQZ0UBIs6vLaOMHj8MY8nj/3TmvmJcq28oGcsm6RRNZgVAkU4N/wrOsyBbROe03weSmzgFuOb3lMreLriaTPHwkq5I5HYCH20ogm5YW9xReWyXbUws9IiKYNUAEye8vzoY397uXZLzzF1nbZvbwXSqh/xZOHcCzCjK0pfAdBhWslcuU1RhDrrX2LAaA+XFwbKtogPIFWYvSSPvp6fd/ANUpnm1IrR9jeyRgV6xai2Ho2+E33n8Gs2nc69BK08WFTLRXxx5tdWrkTeTgGA/GvvabaPPTP2/ut2LXKP2oUX5RdyQAwGVKLDtpcBkMNj554FMDyxYeCnNsxxM+hasi+EFZ1gjBGu2kqVOmcrbnKoH30/BLI1pbYNqgZkyOY6S43xA4kQFcuiPF0ERKetzK1olXBKzOMwkLoUBsMEGoCOT1970ypNyHyZI5HLgD6p3NRQpUPui0BYEuLKQI4TAgaNL5tbcW6MoGqHsdOwF8DpuykrkP6VjGVyS+rIm55XK0MVDt8cccx8HKDvW7Kb11wd2xoXiyUAmEErmKvokIA1fgdJ4sQa2TefScjLVSKXuTKfRSNIpQZezOflVPiGVdJsF1xZHiwhbzh4aa0VCyuV2vc8kwiQ6xZGfdnm1GjsP/h8LqXmKqp7TFCoNg+kLY9bgMCO+1a9jddXisNpijlhPEcuIS/fJ1K02soP9/dXxqxgJsO0aVWxyLUMVx0OAhA6nwrbJ3ZB9BBrWHkEoUHodv9CBYEVV47ISklpSYQxKsuSY+JCnFNEpYS330/uGLeZQg4MloAVjQpdXzQ2PO+ULOekyqQfLWkM8ygfhtG+mFf1vild7KC8mn2SWOgvbYTtCjMG1T9szrOfoq1eR081USn62jJgMQ0q2IGTLql/NQ+GwZKplENaJoccvc9dLEY1Dx2KaC1LiSD+nQXCIlO8ypRXoZQDi8iRyc0FGJoMysTlqnJrtCwldirm/jMFwjoysoaa1RuIgpCRoCjBD8mhdGiTPK9Ewg4PNM5XU1RC38GtLHSbsqxY3qFDwp4LYkw82JuoJi4S3TOZq052XuyQSsEScUd2xH4QjPYh3A4NVWzulnvmhXYtC9F45vMeAEMdzqqnHVY0nJj8wPar3hj7gIRXwUbItnRYfocZE4oRzHuAXYJkwei1dEgOR0cCDKtxXPi2zZFLesPgQjHKU4PbdNhsqttXBdQQduQeY/7y4DzAeP7crJNvsgVLOpJ4cVWWtRgC0tu5d7O/fCmiRASmnEq0TxfM1C1+nKvtb53b8ilNrgauFH3svPXubvzrNbQldn9j0ktanXae9Sqysio6nHqizT7cxVev+C8URPR2aXXMJHOZUgu9tlGrWw1p0eGvnV2P4x1PLjVPeksrIV7Ivd4NxaCrIi2te7/Tk8xhYnC4yEiULBykjXw4ubwoJT+Zs3/IXd4o4kHeJaeDjXIxV2192HwJEU9hRXk60UI0Gg1HbYG/aUZJdILqOfPcnp2+1xFdaE9/0yggknm2AUHVy/kIYyFmBaTzEvNIwkyI4OQ8lXjiEJAKpz5SogCg9Qy3TR7qO2RG5cX2BEd8+yFT2nKGG34txCNDh0ypMzYJ+CV/4e/sjVHnFLENFuGWTXt1CMWKy9L8nv7Jg+ZxQJBmI1PpMfZP7Dgujq/bhe3cUIzYluOCrPsRV6WwgPq9UzpZd0QaVyaly9/Pv90DcN7FvUbiYs/Hmc/Ik7NFIoAwEvf4lu+e+pgnk8lk/Nj1JABINz7fdIonk3fNO4sx/+S1b/5uJpm8E4/W+YBUYiSWTN6JdkCrW0qR6fwRHl0bmPXkVv2FHGKpaImSxgPTrW/F0t8WP09HrgZ6N3MAYuxlfQ/MrnSb3NhLDCAbemMAMBecAvg2FEyrzx2Ietsticxnfob05FIRVD7E516w6gHitU8oACS/SNsj0do8E9z84EOejpU4BQLzX6ZNVIQE701rYw0kT163BKnzgiXuZ2GR2WKhw1Lq+kv2KkV0fRrWX2QC/vmOpLZpU8aPrVnvJ2zki/Sbe71Xb97Y2bDp6UhL0t7CirVrfXVeSsz1w2BtMUsqQjd3OmonPOPms5NqN0MykMp84+YBJvFtPGfVjODwAsaiaw//mDm0yL0DmxwYs1jrBLm85Y+Om6ReAgBELEsTxaDIvZH4uK1tXGiAviC+/iD6Rsh2dqqIOeXFql7W0b455hSfSFPesvDb7YlgW/yABTjzyxdAtHcOW5kGLpUuuwFoKyattSdL56c2o619zxrWcjA332yG3/mhxZW8wq7kmtSngsXiuM3uWfZgkSKuBZj3MACmrusN6Lcsxf12R6XDDmvB5qoJY7SwHS0K2hFvyhfWmrRTl4mLcwVkEbfjbUx7jyBkvXvbdWq5eNEdpWE3WEauz16YFDANtUAiE0SWC4QVGEr7ruz7df0KzUmMGCoP3s09IhtjSOEOaAsNlrgGoNp+lxe5hwYHF1yaJ4JEXShgFiUAIOqzM3KUqkC2cavpvQOT6oXMm2bndUJY4uKO4MYBK5XlnZADroCDmH/i+Xxhkd60skl/+hnkVSgg6tFMPPniACZ3ZaRCzznywcUh6y03ugwPWJGcJek3nqUwCxyj5OcfF9ROmt/laT7tSpe1H9VkUOxO31lqO9uG9qm0VKT9zop3PVK5Sniqw47YmSda7F9EN58qyDFIoLA0SF5N1/YMZeT9EADy+qACANMvAyCHJtu3t0vjeA0A2aI9k29JcoGVkLwMhGZRPP7EsGvvgyGcOiSM/WssXa2SFvypwyHGto79ZQzA5dS6EGNbTWAEWti8HmJsa68YzSu40cmciMioRw2ig/8pF5h1Bm8rlwpQ+eVFu4EnzUeBMakr0+/E9L7DQN8ECQERNTBxGDAn/BxSEEw/DJhD4ZjizOuJajkA5TNEXSs2PR/l5mL6Xxp3MakJLl2wVXTeGOsDArk6B4HUB8KgJDAcNIaUD4HFvRlbyj4TExSDZGKi2y5rvWGJW8ZD7XALbCY7pFzcuFYLX13amB9FEnPf7603/9jXuim59Fdaut+a1AkillidvCN2ZbY9EPXNRFpm1s+kb8EMbWlXy4xYaLe30RMmbVGybc/xOO5T14RMbd9rRRrIz0YAGHhgq+j07aMk3KkibcXNqErCL+usQxc0ICPCZf28rsfjACAGh3T9/CK4IjtcR9D2hi/2uFPeXFRzFkKcHVQMpSDSUixqNbeHRkUQ9Q7fp0VY1ieKOCJWVMIhK6ZIu3HbILO7T2NYuFK+bdL2DL5H7pyPgrFMBhQBYMgDs5Zd6PdD0wCWmS8kCAg9k0IxoSMMHWFEJQAglAE6AgHdUcATnNj6UqXQ5Zz3c9py8r4VL4ZUYwREBoSu63pA13V9wWYcmudfzFuqxnJvQ9YH4aBbTGGL8FS74nZ41Les3yLefvrinnCIhoM0LW4AmLeqhfTS2fYq1ElkaueA6V5pNtv/+n/lCmIDYrQBwQzwTFuasBzhSLTyqpwmvnaYIeJq5UENm7S/OnQrbawYYyw/mFjXHz2oVVwK7+5QOkrW5UkQnddthDxxbExNt5pE0m6bxHN+mjJ/f7AKZSV1j+VCPGBRkFijrc8rfuLYlnQU8WHB7Y58JFUBlakqDlSq330Ww0y9bFvaEz9Ovg8A0qHsmV9bJNCqISyMPp199cSk1yxGiIc++sJZVEsvXmGFVbauiarUBqUcLUJ/8oIFTJmSW8NdQU2JVEdWtkyewAByczuSM70b37P9tWXNj3zxXmVw0g7BGRt7Scuvh6JT0nL6EwP7NZeqXK5DjEEH5IK1bGEAUUJ1CA7EOUij1Pvz3MUT9VR3cz4MgNTesCxxnfHIuwXvYYwBYI3bXcqbGTkJHZAiEaXLKtET2eTW/FxB6w8R65ZlCW+7nQQaOxMM0MGYS/tMQnAQP48CCCUoIMOqGzT1d3NPygMY5cFlmO9u1W25Icv4VJGgzpXhGdSEGQtxDYCczkHt61Bg2trhC2HN71/7Vkl2xU2jGJ85OiYLc18x34gRP7IRmQ5/3HI9Dc6ItOBi5Vx/aXYZrvaBMJaIsoZoDBgd113qdeNqe3omSQLmF8TCFzkdkheVeFFYl+mu6yWnVYT7MFRBI1ABod8K6QVxjzwqdU3Fh3XI6OLztx/EAlZ2R6BLtojNpdvN+Fx//Rel1CjLLrioAsNQSWcQqf7Yo3/IZ5+hfLZlCwCYZ7SOz41Fuf1E7rOmSUes6Nov3zb92pulpGW4Mh7SwrOpM/+Gda/inQKRyw+eO8UB4NFXohf3nschO4dVSql7pTkrz/pGcftuCXGNNxQswE+SBvH5d2+eHppJJu+Mb9gUzG9TEGvm/j2ZTCaT8Svf/M5vd+6y7f9E3tg4W+dDri7uEmGyRrBvHA6V8GWuZ7f0Hj+Tngmb2yIKOlZIa9Yv66fOHUq9ZRsUhDiTv8JtKvQAFZO4tfP++WICIz9dGDECVGQTNIk2aAs7bNe0HEk4YwxTYp9aBpFQx0ht8dcTCuLnnkr0IZlcv55NX//hl8VmX+Px7pnZjWYCAASRlaGZum2bT1oX3N39yQ3qrEffss/1OG/9XzZtTNpPeq5cId8YeMP8DfcMcbT9F2h99leJRDwcb9xsHyei3++wbeZk+1OfeEZdyGtu8F5QI5tRY90b+Wdzg+d+eIRTFssUAP0BGtt3wsm+Dc4nt2vdns9q6t+tleBWViyiczDEoZyntu4XXbmcu3ztf5u6/P1sKEPoh1uuOe/ckrfy2gwMxrw08y9RXVrOdAFAMdg5FVEuRjptDGGa1budGmiTYeq6ruuD8frz8rdLOHgt7tm+2hyN5bVneC+bJPviHfpCT/5ZWx45/cKgrOu6rjM+jIOlpjbCnlPy5FVK8ortXotMg7xOw1L6J/hyR2rHB7Y9WK7Enx+oAwA9eW/HNy7k3WHDeqcATLbHY1uZFv9XIuVsSfKgvBgKMHBjMC/Gbry4PdVvfemrX1hrid5yGV7OyNT0FNbZp1V4TqEXWPugygDAlmJi2/geO/ib/5N6mv1X405zKkU9yNdsbL8YZHyZBgJkIjIIAPW5OSay4/MN7zsyEOE5/U+M0bh9KEraWvfFVU0/uhjqQd7WBMUWAtJYGICuW9Ok/ImJ5S7catbyQkUzaLrtpURej0kj20EbtGVQnviQTCaRTCaTsLkgXzLVsuc/lpWC/GSBJfOiHsllzyJyOO6/0eLT7y1biVYo7IjFri9HXKy5Xyk8mzr2vwF7Rx3I1laySF2y9rL2OyXmYjd/rESISOijONiHwtVw5uLCAUBL/d4KlQ+3Tg/Vu3QRlLeDJxH3Z+nt6aJtXYF/jKx56utZhsLNPB8P/tZ308QPvsjegPxAuyyt91UBllJ3ryi7mv5+7PxSLMRRuH5+auH6dx65mkiMH8jd4LtksTnpQwmbV/pQYPrfL5IYkaNjIzSCUSBQ0PnfBqwZlBX0WDeYHm1jblXoMqWFBJXIrQPe4mqJzQZ9/NtNMzvyIz2ATCeRFDd3SP7d2Rs8+Ksl4tYYWd6GyAKmocrk/ZBniHJkmIOBU6a5iDQC0PiUTqyCCPfYh67sIrYGA6nDXmpsPsvBATPKhO7qAMxGBbhkc0vu5buy99IlvkeafWu/e9V1NJL/fJ0lAR/x4R5PFezpk0wmr841SaTdyJZCNyQ3XZ912X63PLsltU9QAIQOPeOad7f49/DLFNAR1lG4e3rYUMGiYLid7QBveQxAxXZLcCSTSZ/5yI3Pf+giL/KTr8wkSwKbGeqSED7mu8KRzB03ZoDkxsSumS1Xs9JqAN+ESimfycVIgvoHfnwqVhjRNlCenTBjgk8wEFIgi+Bgt99WANjhtvh1JbAIANL6zuHUybz1tE2nv2fnOWc6aCBfk6ZmK8bn50cr45adZre4fBCmBkifZGOSHw41BLkzpyz0jHGO27n9Nh/fIDr1KikxffSMdn2oP8tpaCJXWm+95aiGNM4DpLDHQ8eBXHm59/Znwq0mumJYD0YNNYJBxCcsJyNz5aLNDjW0qfpCYcFJPvhrq7xsNA4xWkVY0gZt3yAAdF2wcc6RVtHfy4fcLOopzeY23A3zimGRxkadCyYSqvK7rBjG876ys/24W75ue7rXXlcr5xYgd8uD9spigDD7clKBYKmSdeDcM+4bhqwYltBhahFFNqcsxU11mzZRyPX3S4XX1D8SRFVcde7CcEcioC/C3svj3BbN+LhU/k96vZbeVTANLkcUCCw6cdnuN1VyuSWZUoR7CLFiJWam+ueJ1WkC599PtG3/pMQ9moaC+YlV5dJKm0y7s6EO+pZc9kyOelOkQlh2a5lqEPGybIx3e2ulsFTNRq3lTK3Zji2TqyUtISuWZRdEtydhcqmx3DvJV0tadn8jjD3OqL+EsM51eWZ2ayoERYlh1XB+Ve+37S7TVkpYfxptWCVpyQqBaZV5d9j3vJGL/mTyP6Y0YxWVaOt3u/nYsE0t5FKR7Btbo8LwXuFUBVjW7m15Yco271lc0rJ/KFbEnFQIy1ANmtm7E4D41QShlhqJ5ywu23r0jB/ce9+3FcfyNuNu/fcD+eloPaGjDQyGCiZv2HncHdWh1NmgKLaXQxVgYWopJ6HHU+EFQ25gAHTBCdvh7k/H1RJtVmsqR4XW7lx9cOyf+h/NTDozwVEfze3IbQ1QIwI1WGKVYZVX3Zq/wjxAmB8AIfSOo58nQ8cIBiOlGpqqIS3ZVuWd29qLdxsgsRgVFKnhFy/kM4iNB3aU3OdlJf9+VHB8uc6yi/F25lt3tUXyP3JtPfh6TZnJ+3JKpNqGS/3nXDUoD7PbVnwmWw8A0eH6yCCDW9mmQ0Xp/9GphhKRsPfPiWvHQZq644NIb1XHCup2y9iXoCpK3PZHx/REMnkv/qCN/EUCSCKQX1Sr69x8r3QCU5UBuCvfzYivtmgACCso2IDEo6VvWBUlQr1TEB++vUtLUEJRsIZJVpiOUv/RVxVpxUlhWjUX5IDQecGeCkFdR8n9JaoiLUK76c8LwmlQAAL55BXZyt2qU953b+KL+vyQzqU5qIycvUpep/VgwakOPHxYfCDonXs8LFhUJuahfBbLDx2WbGD3hddQvaM6sOKAalwPuQy5hwlLBwPIp84Jqt0PnfJhgLEeqe/H9nSsjVfCimrYrei3iM+3tOvexz+yJoJatDrfQ4a1TSwB8N9bGj1yPTPnSn6ylVWw4VNVwkArHpx8JXVScIA0767ov1arCwuINynmaWBt77uhirxslWHpEIsHAfM0QyV/ybwGVT5kBR90YrDCraiqvTtTxDDUv2QjIVS2k1i1YUX956mBrk6AVUKuaiuRNDaqDTwgWGX/Pl51bgEKmOB/ZtxKH0OVuuqqK5HB1Ig5CEIrMRCrIC1RkZxWR1rpGaowUNn+/WuwWgf786P8n0nQXINVg1WDVYNVg1WDVYNVg1WDVYNVg1WDVYNVg1WDVYNVg1WDVYNVg/X/F6z/CwHPDAUr2sEnAAAAAElFTkSuQmCC" alt="NRB" class="header-logo">
+      <div class="header-text">
+        <h1 data-i18n="results_screen_title"></h1>
+        <p data-i18n="results_screen_subtitle"></p>
+      </div>
+    </div>
+    <div class="content">
+      <div class="global-score-section">
+        <div class="global-score-text">
+          <h2 data-i18n="results_heading"></h2>
+          <p class="intro-text" data-i18n="results_intro"></p>
+          <ul class="intro-list" id="results-dimensions"></ul>
+        </div>
+        <div class="global-score-gauge">
+          <svg id="gauge-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#5dade2"/>
+                <stop offset="50%" stop-color="#007CB8"/>
+                <stop offset="100%" stop-color="#005a87"/>
+              </linearGradient>
+            </defs>
+            <text id="gauge-value" x="100" y="28"
+                  text-anchor="middle"
+                  font-family="Open Sans, sans-serif"
+                  font-size="28" font-weight="700"
+                  fill="#007CB8">0%</text>
+            <path id="gauge-bg" d="M 20 130 A 80 80 0 0 1 180 130"
+                  fill="none" stroke="#e1e8ed" stroke-width="14" stroke-linecap="round"/>
+            <path id="gauge-fill" d="M 20 130 A 80 80 0 0 1 180 130"
+                  fill="none" stroke="url(#gaugeGradient)" stroke-width="14" stroke-linecap="round"
+                  stroke-dasharray="251.3" stroke-dashoffset="251.3"/>
+            <g id="gauge-needle" transform="rotate(-90 100 130)" style="transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);">
+              <line x1="100" y1="130" x2="100" y2="65"
+                    stroke="#003554" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="100" cy="130" r="8" fill="#003554"/>
+              <circle cx="100" cy="130" r="3" fill="#ffffff"/>
+            </g>
+          </svg>
+          <div class="gauge-label" data-i18n="gauge_label"></div>
+          <p class="global-score-message" id="global-score-message"></p>
+        </div>
+      </div>
+
+      <h3 class="details-heading" data-i18n="details_heading"></h3>
+      <div class="dimensions-results" id="dimensions-results"></div>
+
+      <div class="info-note">
+        <strong data-i18n="info_note_title"></strong>
+        <span data-i18n="info_note_body"></span>
+      </div>
+
+      <div class="actions center">
+        <button id="btn-restart" class="btn btn-secondary" data-i18n="btn_restart"></button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   DONNÉES (traductions injectées au build)
+   ============================================================ */
+const I18N = {
+  "ui": {
+    "intro_title": {
+      "fr": "Auto-positionnement sur le feedback",
+      "en": "Self-assessment on feedback",
+      "nl": "Zelfpositionering rond feedback"
+    },
+    "intro_subtitle": {
+      "fr": "Se positionner dans son approche du feedback",
+      "en": "Position yourself in your approach to feedback",
+      "nl": "Bepaal uw positie ten opzichte van feedback"
+    },
+    "intro_lead": {
+      "fr": "Répondez à ces <strong>16 questions</strong> de manière anonyme. Les résultats sont pour vous.",
+      "en": "Answer these <strong>16 questions</strong> anonymously. The results are for you.",
+      "nl": "Beantwoord deze <strong>16 vragen</strong> anoniem. De resultaten zijn voor u."
+    },
+    "intro_dimensions_label": {
+      "fr": "Ce questionnaire vous permettra de faire le point sur votre approche du feedback à travers trois dimensions :",
+      "en": "This questionnaire will help you take stock of your approach to feedback across three dimensions:",
+      "nl": "Deze vragenlijst helpt u uw aanpak van feedback te evalueren aan de hand van drie dimensies:"
+    },
+    "meta_time": {
+      "fr": "⏱️ 5 minutes",
+      "en": "⏱️ 5 minutes",
+      "nl": "⏱️ 5 minuten"
+    },
+    "meta_anonymous": {
+      "fr": "🔒 Anonyme",
+      "en": "🔒 Anonymous",
+      "nl": "🔒 Anoniem"
+    },
+    "meta_questions": {
+      "fr": "📊 16 questions",
+      "en": "📊 16 questions",
+      "nl": "📊 16 vragen"
+    },
+    "btn_start": {
+      "fr": "Démarrer le questionnaire →",
+      "en": "Start the questionnaire →",
+      "nl": "Start de vragenlijst →"
+    },
+    "btn_resume": {
+      "fr": "Reprendre où j'en étais",
+      "en": "Resume where I left off",
+      "nl": "Hervatten waar ik gebleven was"
+    },
+    "btn_previous": {
+      "fr": "← Précédent",
+      "en": "← Previous",
+      "nl": "← Vorige"
+    },
+    "btn_next": {
+      "fr": "Suivant →",
+      "en": "Next →",
+      "nl": "Volgende →"
+    },
+    "btn_see_results": {
+      "fr": "Voir mes résultats →",
+      "en": "See my results →",
+      "nl": "Bekijk mijn resultaten →"
+    },
+    "btn_restart": {
+      "fr": "Recommencer le questionnaire",
+      "en": "Restart the questionnaire",
+      "nl": "Vragenlijst opnieuw starten"
+    },
+    "multiple_choice_helper": {
+      "fr": "Plusieurs réponses possibles",
+      "en": "Multiple answers possible",
+      "nl": "Meerdere antwoorden mogelijk"
+    },
+    "completed_label": {
+      "fr": "complété",
+      "en": "completed",
+      "nl": "voltooid"
+    },
+    "dimension_word": {
+      "fr": "Dimension",
+      "en": "Dimension",
+      "nl": "Dimensie"
+    },
+    "of_three": {
+      "fr": "sur 3",
+      "en": "of 3",
+      "nl": "van 3"
+    },
+    "results_screen_title": {
+      "fr": "Vos résultats",
+      "en": "Your results",
+      "nl": "Uw resultaten"
+    },
+    "results_screen_subtitle": {
+      "fr": "Merci d'avoir complété le questionnaire",
+      "en": "Thank you for completing the questionnaire",
+      "nl": "Bedankt voor het invullen van de vragenlijst"
+    },
+    "results_heading": {
+      "fr": "Merci d'avoir complété le questionnaire d'auto-positionnement sur le feedback",
+      "en": "Thank you for completing the self-assessment questionnaire on feedback",
+      "nl": "Bedankt voor het invullen van de zelfpositioneringsvragenlijst rond feedback"
+    },
+    "results_intro": {
+      "fr": "Vous trouverez sur la droite votre score global et ci-dessous le détail sur chacune des dimensions :",
+      "en": "You will find your overall score on the right and the details for each dimension below:",
+      "nl": "Aan de rechterkant vindt u uw totaalscore en hieronder de details per dimensie:"
+    },
+    "gauge_label": {
+      "fr": "Votre score global",
+      "en": "Your overall score",
+      "nl": "Uw totaalscore"
+    },
+    "details_heading": {
+      "fr": "Détail par dimension",
+      "en": "Details by dimension",
+      "nl": "Details per dimensie"
+    },
+    "info_note_title": {
+      "fr": "💡 À noter",
+      "en": "💡 Good to know",
+      "nl": "💡 Goed om te weten"
+    },
+    "info_note_body": {
+      "fr": "Le feedback positif peut être donné en réunion d'équipe pour valoriser publiquement, alors que le feedback d'amélioration se donne idéalement en privé pour préserver la personne. C'est la règle : « féliciter en public, corriger en privé ».",
+      "en": "Positive feedback can be given in team meetings to value the person publicly, whereas improvement feedback is ideally given in private to protect the person. The rule is: \"praise in public, correct in private\".",
+      "nl": "Positieve feedback kan worden gegeven tijdens teamvergaderingen om de persoon publiekelijk te waarderen, terwijl verbeterfeedback bij voorkeur in privé wordt gegeven om de persoon te beschermen. De regel luidt: \"prijzen in het openbaar, corrigeren in privé\"."
+    },
+    "global_msg_high": {
+      "fr": "Vous avez une approche très mature du feedback - bravo ! Continuez à le pratiquer pour maintenir cette dynamique.",
+      "en": "You have a very mature approach to feedback - well done! Keep practising to maintain this dynamic.",
+      "nl": "U heeft een zeer volwassen benadering van feedback - goed gedaan! Blijf oefenen om deze dynamiek te behouden."
+    },
+    "global_msg_mid": {
+      "fr": "Vous êtes sur la bonne voie. Vous avez de bons réflexes et il vous reste quelques points à consolider.",
+      "en": "You are on the right track. You have good reflexes and a few points remain to consolidate.",
+      "nl": "U bent op de goede weg. U heeft goede reflexen en enkele punten kunnen nog worden versterkt."
+    },
+    "global_msg_low": {
+      "fr": "Vous avez encore une marge de progression intéressante. Le feedback est une compétence qui s'apprend, vous êtes au bon endroit pour la développer.",
+      "en": "You still have an interesting margin for progress. Feedback is a skill that can be learned, and you are in the right place to develop it.",
+      "nl": "U heeft nog een interessante marge voor vooruitgang. Feedback is een vaardigheid die kan worden geleerd, en u bent op de juiste plek om deze te ontwikkelen."
+    },
+    "level_word": {
+      "fr": "Niveau",
+      "en": "Level",
+      "nl": "Niveau"
+    }
+  },
+  "dimensions": {
+    "1": {
+      "title": {
+        "fr": "Ma pratique du feedback",
+        "en": "My Feedback Practice",
+        "nl": "Mijn feedbackpraktijk"
+      },
+      "short": {
+        "fr": "Pratique",
+        "en": "Practice",
+        "nl": "Praktijk"
+      }
+    },
+    "2": {
+      "title": {
+        "fr": "Mon rapport au feedback",
+        "en": "My Relationship to Feedback",
+        "nl": "Mijn relatie tot feedback"
+      },
+      "short": {
+        "fr": "Rapport",
+        "en": "Relationship",
+        "nl": "Relatie"
+      }
+    },
+    "3": {
+      "title": {
+        "fr": "Le feedback dans mon environnement",
+        "en": "Feedback in My Environment",
+        "nl": "Feedback in mijn omgeving"
+      },
+      "short": {
+        "fr": "Environnement",
+        "en": "Environment",
+        "nl": "Omgeving"
+      }
+    }
+  },
+  "questions": [
+    {
+      "dimension": 1,
+      "type": "checkbox",
+      "title": {
+        "fr": "Évaluez les feedback suivants : cochez ceux qui vous semblent bien formulés",
+        "en": "Evaluate the following feedbacks: tick those that seem well formulated",
+        "nl": "Beoordeel de volgende feedbacks: vink degene aan die u goed geformuleerd lijken"
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "« Ton rapport était mauvais. Il y avait beaucoup d'erreurs. »",
+            "en": "\"Your report was bad. There were a lot of mistakes.\"",
+            "nl": "\"Je verslag was slecht. Er waren veel fouten.\""
+          },
+          "points": -1
+        },
+        {
+          "text": {
+            "fr": "« J'apprécie le travail que tu as fait sur ce projet. La répartition des tâches était précise et a permis que chacun comprenne bien son rôle. Continue comme cela. »",
+            "en": "\"I appreciate the work you did on this project. The division of tasks was precise and allowed everyone to understand their role. Keep it up.\"",
+            "nl": "\"Ik waardeer het werk dat je aan dit project hebt gedaan. De taakverdeling was duidelijk en zorgde ervoor dat iedereen zijn rol begreep. Ga zo door.\""
+          },
+          "points": 1
+        },
+        {
+          "text": {
+            "fr": "« C'était bien mais ça pourrait être encore mieux si tu faisais plus d'efforts. »",
+            "en": "\"It was good but could be even better if you made more effort.\"",
+            "nl": "\"Het was goed, maar het zou nog beter kunnen als je meer moeite doet.\""
+          },
+          "points": -1
+        },
+        {
+          "text": {
+            "fr": "« C'était très bien. Continue comme cela. »",
+            "en": "\"It was very good. Keep it up.\"",
+            "nl": "\"Het was heel goed. Ga zo door.\""
+          },
+          "points": -1
+        },
+        {
+          "text": {
+            "fr": "« Ta présentation était ennuyeuse, tu aurais dû mieux faire. »",
+            "en": "\"Your presentation was boring, you should have done better.\"",
+            "nl": "\"Je presentatie was saai, je had beter moeten doen.\""
+          },
+          "points": -1
+        },
+        {
+          "text": {
+            "fr": "« J'ai trouvé ta contribution à la réunion intéressante. J'ai trouvé que tes questions étaient pertinentes. »",
+            "en": "\"I found your contribution to the meeting interesting. I thought your questions were relevant.\"",
+            "nl": "\"Ik vond je bijdrage aan de vergadering interessant. Ik vond je vragen relevant.\""
+          },
+          "points": 1
+        },
+        {
+          "text": {
+            "fr": "« Tu avais dit que tu enverrais le dossier vendredi dernier mais je ne l'ai pas reçu. Je me retrouve en difficulté dans mon organisation. Peux-tu me l'envoyer à temps pour les prochaines fois s'il te plaît ? »",
+            "en": "\"You said you would send the file last Friday but I haven't received it. This puts me in difficulty with my organisation. Could you please send it on time next time?\"",
+            "nl": "\"Je zei dat je het dossier vorige vrijdag zou sturen, maar ik heb het niet ontvangen. Dit brengt mij in de problemen met mijn organisatie. Kun je het de volgende keer op tijd sturen, alsjeblieft?\""
+          },
+          "points": 1
+        }
+      ]
+    },
+    {
+      "dimension": 1,
+      "type": "radio",
+      "title": {
+        "fr": "Quelle est la meilleure attitude à adopter lorsqu'on reçoit un feedback ?",
+        "en": "What is the best attitude to adopt when receiving feedback?",
+        "nl": "Wat is de beste houding om aan te nemen bij het ontvangen van feedback?"
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "Je pose des questions à mon interlocuteur pour mieux comprendre son retour",
+            "en": "I ask my counterpart questions to better understand their feedback",
+            "nl": "Ik stel vragen aan mijn gesprekspartner om zijn/haar feedback beter te begrijpen"
+          },
+          "points": 3
+        },
+        {
+          "text": {
+            "fr": "Je prends du recul et j'évalue la pertinence du feedback",
+            "en": "I take a step back and assess the relevance of the feedback",
+            "nl": "Ik neem afstand en beoordeel de relevantie van de feedback"
+          },
+          "points": 3
+        },
+        {
+          "text": {
+            "fr": "Si on me donne un feedback, c'est forcément que je fais mal mon travail, donc je dois absolument changer ma manière de faire",
+            "en": "If I get feedback, it means I'm doing my job badly, so I must absolutely change how I work",
+            "nl": "Als ik feedback krijg, betekent dat dat ik mijn werk slecht doe, dus ik moet absoluut mijn manier van werken veranderen"
+          },
+          "points": -1
+        },
+        {
+          "text": {
+            "fr": "J'en prends note, mais comme ma façon de faire me convient déjà, je ne vois pas ce que je pourrais améliorer",
+            "en": "I take note, but since my way of doing things suits me, I don't see what I could improve",
+            "nl": "Ik neem het ter kennisgeving aan, maar omdat mijn manier van werken mij al bevalt, zie ik niet wat ik zou kunnen verbeteren"
+          },
+          "points": -1
+        }
+      ]
+    },
+    {
+      "dimension": 1,
+      "type": "radio",
+      "title": {
+        "fr": "Vous souhaitez donner un feedback à votre collègue sur sa présentation, quelle est la première chose que vous devez faire ?",
+        "en": "You want to give feedback to a colleague about their presentation. What is the first thing you should do?",
+        "nl": "U wilt feedback geven aan een collega over zijn/haar presentatie. Wat is het eerste dat u moet doen?"
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "Vérifier la disponibilité de mon interlocuteur pour un feedback",
+            "en": "Check my counterpart's availability for feedback",
+            "nl": "De beschikbaarheid van mijn gesprekspartner voor feedback controleren"
+          },
+          "points": 3
+        },
+        {
+          "text": {
+            "fr": "Prévenir la personne que vous allez lui donner un feedback",
+            "en": "Warn the person that you are going to give them feedback",
+            "nl": "De persoon waarschuwen dat u feedback gaat geven"
+          },
+          "points": 2
+        },
+        {
+          "text": {
+            "fr": "Demander ce qu'il a pensé de sa propre présentation",
+            "en": "Ask what they thought of their own presentation",
+            "nl": "Vragen wat hij/zij van zijn/haar eigen presentatie vond"
+          },
+          "points": 1
+        },
+        {
+          "text": {
+            "fr": "Décrire les faits directement",
+            "en": "Describe the facts directly",
+            "nl": "De feiten direct beschrijven"
+          },
+          "points": 0
+        }
+      ]
+    },
+    {
+      "dimension": 1,
+      "type": "checkbox",
+      "title": {
+        "fr": "Dans quelle(s) situation(s) peut-on donner un feedback d'amélioration ?",
+        "en": "In which situation(s) can you give improvement feedback?",
+        "nl": "In welke situatie(s) kan men verbeterfeedback geven?"
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "En 1:1 (entretiens individuels)",
+            "en": "In 1:1 (individual interviews)",
+            "nl": "In 1:1 (individuele gesprekken)"
+          },
+          "points": 3
+        },
+        {
+          "text": {
+            "fr": "Durant l'entretien annuel / de mi-année",
+            "en": "During the annual / mid-year review",
+            "nl": "Tijdens het jaarlijkse / halfjaarlijkse gesprek"
+          },
+          "points": 3
+        },
+        {
+          "text": {
+            "fr": "En réunion d'équipe",
+            "en": "In a team meeting",
+            "nl": "In een teamvergadering"
+          },
+          "points": -3
+        },
+        {
+          "text": {
+            "fr": "Avant ou après une réunion, en privé",
+            "en": "Before or after a meeting, in private",
+            "nl": "Voor of na een vergadering, in privé"
+          },
+          "points": 3
+        }
+      ]
+    },
+    {
+      "dimension": 1,
+      "type": "checkbox",
+      "title": {
+        "fr": "Dans quelle(s) situation(s) peut-on donner un feedback positif ?",
+        "en": "In which situation(s) can you give positive feedback?",
+        "nl": "In welke situatie(s) kan men positieve feedback geven?"
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "En 1:1 (entretiens individuels)",
+            "en": "In 1:1 (individual interviews)",
+            "nl": "In 1:1 (individuele gesprekken)"
+          },
+          "points": 3
+        },
+        {
+          "text": {
+            "fr": "Durant l'entretien annuel / de mi-année",
+            "en": "During the annual / mid-year review",
+            "nl": "Tijdens het jaarlijkse / halfjaarlijkse gesprek"
+          },
+          "points": 3
+        },
+        {
+          "text": {
+            "fr": "En réunion d'équipe",
+            "en": "In a team meeting",
+            "nl": "In een teamvergadering"
+          },
+          "points": 3
+        },
+        {
+          "text": {
+            "fr": "Avant ou après une réunion, en privé",
+            "en": "Before or after a meeting, in private",
+            "nl": "Voor of na een vergadering, in privé"
+          },
+          "points": 3
+        }
+      ]
+    },
+    {
+      "dimension": 2,
+      "type": "radio",
+      "title": {
+        "fr": "Indiquez à quel degré cette affirmation vous correspond : « Si je donne un feedback positif, j'ai peur qu'on pense que je veux obtenir quelque chose. »",
+        "en": "Indicate to what degree the following statement is correct or incorrect for you: \"If I give positive feedback, I'm afraid people will think I want something.\"",
+        "nl": "Geef aan in welke mate de volgende uitspraak juist of onjuist is voor u: \"Als ik positieve feedback geef, ben ik bang dat men denkt dat ik iets wil krijgen.\""
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "Totalement incorrecte",
+            "en": "Totally incorrect",
+            "nl": "Helemaal onjuist"
+          },
+          "points": 4
+        },
+        {
+          "text": {
+            "fr": "Plutôt incorrecte",
+            "en": "Rather incorrect",
+            "nl": "Eerder onjuist"
+          },
+          "points": 2
+        },
+        {
+          "text": {
+            "fr": "Plutôt correcte",
+            "en": "Rather correct",
+            "nl": "Eerder juist"
+          },
+          "points": 0
+        },
+        {
+          "text": {
+            "fr": "Totalement correcte",
+            "en": "Totally correct",
+            "nl": "Helemaal juist"
+          },
+          "points": -2
+        }
+      ]
+    },
+    {
+      "dimension": 2,
+      "type": "radio",
+      "title": {
+        "fr": "Indiquez à quel degré cette affirmation vous correspond : « Si je donne un feedback d'amélioration, j'ai peur que mon interlocuteur se mette sur la défensive. »",
+        "en": "Indicate to what degree the following statement is correct or incorrect for you: \"If I give improvement feedback, I'm afraid my counterpart will get defensive.\"",
+        "nl": "Geef aan in welke mate de volgende uitspraak juist of onjuist is voor u: \"Als ik verbeterfeedback geef, ben ik bang dat mijn gesprekspartner defensief wordt.\""
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "Totalement incorrecte",
+            "en": "Totally incorrect",
+            "nl": "Helemaal onjuist"
+          },
+          "points": 4
+        },
+        {
+          "text": {
+            "fr": "Plutôt incorrecte",
+            "en": "Rather incorrect",
+            "nl": "Eerder onjuist"
+          },
+          "points": 2
+        },
+        {
+          "text": {
+            "fr": "Plutôt correcte",
+            "en": "Rather correct",
+            "nl": "Eerder juist"
+          },
+          "points": 0
+        },
+        {
+          "text": {
+            "fr": "Totalement correcte",
+            "en": "Totally correct",
+            "nl": "Helemaal juist"
+          },
+          "points": -2
+        }
+      ]
+    },
+    {
+      "dimension": 2,
+      "type": "checkbox",
+      "title": {
+        "fr": "Que représente pour vous le feedback ?",
+        "en": "What does feedback represent for you?",
+        "nl": "Wat betekent feedback voor u?"
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "Un cadeau",
+            "en": "A gift",
+            "nl": "Een cadeau"
+          },
+          "points": 3
+        },
+        {
+          "text": {
+            "fr": "Une démarche régulière et continue",
+            "en": "A regular and continuous process",
+            "nl": "Een regelmatige en continue aanpak"
+          },
+          "points": 3
+        },
+        {
+          "text": {
+            "fr": "Un mauvais moment",
+            "en": "A bad moment",
+            "nl": "Een slecht moment"
+          },
+          "points": -3
+        },
+        {
+          "text": {
+            "fr": "Un moment obligatoire",
+            "en": "An obligatory moment",
+            "nl": "Een verplicht moment"
+          },
+          "points": 0
+        },
+        {
+          "text": {
+            "fr": "Une étape nécessaire pour progresser",
+            "en": "A necessary step for progress",
+            "nl": "Een noodzakelijke stap om vooruitgang te boeken"
+          },
+          "points": 3
+        },
+        {
+          "text": {
+            "fr": "Aucun des éléments ci-dessus",
+            "en": "None of the above",
+            "nl": "Geen van bovenstaande"
+          },
+          "points": 0
+        }
+      ]
+    },
+    {
+      "dimension": 2,
+      "type": "radio",
+      "title": {
+        "fr": "Si vous devez donner un feedback à un collaborateur, vous vous sentez…",
+        "en": "If you have to give feedback to a team member, you feel…",
+        "nl": "Als u feedback moet geven aan een medewerker, voelt u zich…"
+      },
+      "helper": {
+        "fr": "Si vous n'avez pas de collaborateur, imaginez comment vous vous sentiriez",
+        "en": "If you don't have team members, imagine how you would feel",
+        "nl": "Als u geen medewerkers heeft, stel u dan voor hoe u zich zou voelen"
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "Pas à l'aise du tout",
+            "en": "Not comfortable at all",
+            "nl": "Helemaal niet op mijn gemak"
+          },
+          "points": -2
+        },
+        {
+          "text": {
+            "fr": "Plutôt pas à l'aise",
+            "en": "Rather uncomfortable",
+            "nl": "Eerder niet op mijn gemak"
+          },
+          "points": 0
+        },
+        {
+          "text": {
+            "fr": "Plutôt à l'aise",
+            "en": "Rather comfortable",
+            "nl": "Eerder op mijn gemak"
+          },
+          "points": 2
+        },
+        {
+          "text": {
+            "fr": "Totalement à l'aise",
+            "en": "Totally comfortable",
+            "nl": "Helemaal op mijn gemak"
+          },
+          "points": 4
+        }
+      ]
+    },
+    {
+      "dimension": 2,
+      "type": "radio",
+      "title": {
+        "fr": "Si vous devez donner un feedback à un collègue, vous vous sentez…",
+        "en": "If you have to give feedback to a colleague, you feel…",
+        "nl": "Als u feedback moet geven aan een collega, voelt u zich…"
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "Pas à l'aise du tout",
+            "en": "Not comfortable at all",
+            "nl": "Helemaal niet op mijn gemak"
+          },
+          "points": -2
+        },
+        {
+          "text": {
+            "fr": "Plutôt pas à l'aise",
+            "en": "Rather uncomfortable",
+            "nl": "Eerder niet op mijn gemak"
+          },
+          "points": 0
+        },
+        {
+          "text": {
+            "fr": "Plutôt à l'aise",
+            "en": "Rather comfortable",
+            "nl": "Eerder op mijn gemak"
+          },
+          "points": 2
+        },
+        {
+          "text": {
+            "fr": "Totalement à l'aise",
+            "en": "Totally comfortable",
+            "nl": "Helemaal op mijn gemak"
+          },
+          "points": 4
+        }
+      ]
+    },
+    {
+      "dimension": 2,
+      "type": "radio",
+      "title": {
+        "fr": "Si vous devez donner un feedback à votre manager, vous vous sentez…",
+        "en": "If you have to give feedback to your manager, you feel…",
+        "nl": "Als u feedback moet geven aan uw manager, voelt u zich…"
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "Pas à l'aise du tout",
+            "en": "Not comfortable at all",
+            "nl": "Helemaal niet op mijn gemak"
+          },
+          "points": -2
+        },
+        {
+          "text": {
+            "fr": "Plutôt pas à l'aise",
+            "en": "Rather uncomfortable",
+            "nl": "Eerder niet op mijn gemak"
+          },
+          "points": 0
+        },
+        {
+          "text": {
+            "fr": "Plutôt à l'aise",
+            "en": "Rather comfortable",
+            "nl": "Eerder op mijn gemak"
+          },
+          "points": 2
+        },
+        {
+          "text": {
+            "fr": "Totalement à l'aise",
+            "en": "Totally comfortable",
+            "nl": "Helemaal op mijn gemak"
+          },
+          "points": 4
+        }
+      ]
+    },
+    {
+      "dimension": 2,
+      "type": "radio",
+      "title": {
+        "fr": "Dans quelle mesure trouvez-vous utile de demander du feedback à vos pairs pour vous améliorer ?",
+        "en": "To what extent do you find it useful to ask your peers for feedback to improve yourself?",
+        "nl": "In welke mate vindt u het nuttig om feedback aan uw collega's te vragen om uzelf te verbeteren?"
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "Pas utile du tout",
+            "en": "Not useful at all",
+            "nl": "Helemaal niet nuttig"
+          },
+          "points": -2
+        },
+        {
+          "text": {
+            "fr": "Peu utile",
+            "en": "Not very useful",
+            "nl": "Niet erg nuttig"
+          },
+          "points": 0
+        },
+        {
+          "text": {
+            "fr": "Utile",
+            "en": "Useful",
+            "nl": "Nuttig"
+          },
+          "points": 2
+        },
+        {
+          "text": {
+            "fr": "Très utile",
+            "en": "Very useful",
+            "nl": "Heel nuttig"
+          },
+          "points": 4
+        }
+      ]
+    },
+    {
+      "dimension": 3,
+      "type": "radio",
+      "title": {
+        "fr": "À quelle fréquence diriez-vous que les personnes avec qui vous travaillez pratiquent le feedback ?",
+        "en": "How often would you say the people you work with practice feedback?",
+        "nl": "Hoe vaak zou u zeggen dat de mensen met wie u werkt feedback geven?"
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "Quotidiennement",
+            "en": "Daily",
+            "nl": "Dagelijks"
+          },
+          "points": 4
+        },
+        {
+          "text": {
+            "fr": "De manière hebdomadaire",
+            "en": "Weekly",
+            "nl": "Wekelijks"
+          },
+          "points": 3
+        },
+        {
+          "text": {
+            "fr": "Mensuellement",
+            "en": "Monthly",
+            "nl": "Maandelijks"
+          },
+          "points": 2
+        },
+        {
+          "text": {
+            "fr": "De temps en temps",
+            "en": "Occasionally",
+            "nl": "Af en toe"
+          },
+          "points": 1
+        },
+        {
+          "text": {
+            "fr": "Jamais",
+            "en": "Never",
+            "nl": "Nooit"
+          },
+          "points": 0
+        }
+      ]
+    },
+    {
+      "dimension": 3,
+      "type": "radio",
+      "title": {
+        "fr": "Quand avez-vous reçu un feedback pour la dernière fois ?",
+        "en": "When was the last time you received feedback?",
+        "nl": "Wanneer heeft u voor het laatst feedback ontvangen?"
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "Cette semaine",
+            "en": "This week",
+            "nl": "Deze week"
+          },
+          "points": 4
+        },
+        {
+          "text": {
+            "fr": "Ce mois-ci",
+            "en": "This month",
+            "nl": "Deze maand"
+          },
+          "points": 3
+        },
+        {
+          "text": {
+            "fr": "Ce trimestre",
+            "en": "This quarter",
+            "nl": "Dit kwartaal"
+          },
+          "points": 2
+        },
+        {
+          "text": {
+            "fr": "Cette année",
+            "en": "This year",
+            "nl": "Dit jaar"
+          },
+          "points": 1
+        },
+        {
+          "text": {
+            "fr": "Plus longtemps",
+            "en": "Longer ago",
+            "nl": "Langer geleden"
+          },
+          "points": 0
+        }
+      ]
+    },
+    {
+      "dimension": 3,
+      "type": "radio",
+      "title": {
+        "fr": "Quand est-ce la dernière fois qu'on vous a demandé un feedback ?",
+        "en": "When was the last time someone asked you for feedback?",
+        "nl": "Wanneer heeft iemand u voor het laatst om feedback gevraagd?"
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "Cette semaine",
+            "en": "This week",
+            "nl": "Deze week"
+          },
+          "points": 4
+        },
+        {
+          "text": {
+            "fr": "Ce mois-ci",
+            "en": "This month",
+            "nl": "Deze maand"
+          },
+          "points": 3
+        },
+        {
+          "text": {
+            "fr": "Ce trimestre",
+            "en": "This quarter",
+            "nl": "Dit kwartaal"
+          },
+          "points": 2
+        },
+        {
+          "text": {
+            "fr": "Cette année",
+            "en": "This year",
+            "nl": "Dit jaar"
+          },
+          "points": 1
+        },
+        {
+          "text": {
+            "fr": "Plus longtemps",
+            "en": "Longer ago",
+            "nl": "Langer geleden"
+          },
+          "points": 0
+        }
+      ]
+    },
+    {
+      "dimension": 3,
+      "type": "radio",
+      "title": {
+        "fr": "Habituellement, quand vous donnez un feedback, vous diriez qu'il est…",
+        "en": "Usually, when you give feedback, you would say it is…",
+        "nl": "Meestal, als u feedback geeft, zou u zeggen dat het…"
+      },
+      "options": [
+        {
+          "text": {
+            "fr": "Pas bien reçu du tout",
+            "en": "Not well received at all",
+            "nl": "Helemaal niet goed ontvangen"
+          },
+          "points": -2
+        },
+        {
+          "text": {
+            "fr": "Plutôt pas bien reçu",
+            "en": "Rather not well received",
+            "nl": "Eerder niet goed ontvangen"
+          },
+          "points": 0
+        },
+        {
+          "text": {
+            "fr": "Bien reçu",
+            "en": "Well received",
+            "nl": "Goed ontvangen"
+          },
+          "points": 2
+        },
+        {
+          "text": {
+            "fr": "Très bien reçu",
+            "en": "Very well received",
+            "nl": "Heel goed ontvangen"
+          },
+          "points": 4
+        }
+      ]
+    }
+  ],
+  "levels": {
+    "1": [
+      {
+        "min": -5,
+        "max": 7,
+        "level": 1,
+        "description": {
+          "fr": "Le feedback n'est pas encore un réflexe naturel pour vous, que ce soit pour en donner ou en recevoir. Vous pouvez ne pas savoir comment vous y prendre. Mais pas de panique, cela s'apprend ! Et justement, vous avez accès à ce module en ligne sur le feedback.",
+          "en": "Feedback is not yet a natural reflex for you, whether giving or receiving it. You may not know how to go about it. But don't worry, it can be learned! And you have access to this online module on feedback.",
+          "nl": "Feedback is nog geen natuurlijke reflex voor u, zowel om te geven als te ontvangen. U weet misschien niet hoe u het moet aanpakken. Maar geen paniek, het is te leren! En u heeft toegang tot deze online module over feedback."
+        }
+      },
+      {
+        "min": 8,
+        "max": 19,
+        "level": 2,
+        "description": {
+          "fr": "Vous avez compris l'importance du feedback et commencez à l'utiliser, que ce soit en le donnant ou en le recevant. Il vous reste encore à gagner en fluidité et en assurance, mais vous êtes sur la bonne voie !",
+          "en": "You understand the importance of feedback and are starting to use it, both giving and receiving. You still need to gain fluidity and confidence, but you're on the right track!",
+          "nl": "U begrijpt het belang van feedback en begint het te gebruiken, zowel bij het geven als het ontvangen. U moet nog winnen aan soepelheid en zelfvertrouwen, maar u bent op de goede weg!"
+        }
+      },
+      {
+        "min": 20,
+        "max": 32,
+        "level": 3,
+        "description": {
+          "fr": "Vous maîtrisez l'art du feedback, aussi bien pour le donner que pour le recevoir. Vous avez les bons réflexes ! Il ne vous reste plus qu'à passer à l'action.",
+          "en": "You master the art of feedback, both giving and receiving. You have the right reflexes! Now all that's left is to take action.",
+          "nl": "U beheerst de kunst van feedback, zowel om te geven als te ontvangen. U heeft de juiste reflexen! Nu hoeft u alleen nog maar tot actie over te gaan."
+        }
+      }
+    ],
+    "2": [
+      {
+        "min": -15,
+        "max": 1,
+        "level": 1,
+        "description": {
+          "fr": "Le feedback vous met mal à l'aise, que ce soit pour en donner ou en recevoir. Vous craignez de mal le formuler ou de blesser quelqu'un, et lorsqu'on vous en fait un, vous avez parfois du mal à le prendre sereinement. Mais rassurez-vous, avec de la pratique, cela deviendra plus naturel !",
+          "en": "Feedback makes you uncomfortable, whether giving or receiving. You're afraid of phrasing it badly or hurting someone, and when you receive feedback, you sometimes struggle to take it calmly. But rest assured, with practice, it will become more natural!",
+          "nl": "Feedback maakt u ongemakkelijk, zowel om te geven als te ontvangen. U bent bang het verkeerd te formuleren of iemand te kwetsen, en als u feedback krijgt, vindt u het soms moeilijk om het rustig te ontvangen. Maar wees gerust, met oefening wordt het vanzelf natuurlijker!"
+        }
+      },
+      {
+        "min": 2,
+        "max": 17,
+        "level": 2,
+        "description": {
+          "fr": "Vous commencez à être plus à l'aise avec le feedback. Vous comprenez son intérêt et vous essayez d'en donner et d'en recevoir, même si cela peut encore être un peu intimidant. Avec le temps, vous gagnerez en confiance et en spontanéité !",
+          "en": "You're starting to feel more comfortable with feedback. You understand its value and try to give and receive it, even if it can still be a bit intimidating. With time, you'll gain confidence and spontaneity!",
+          "nl": "U begint zich meer op uw gemak te voelen met feedback. U begrijpt het nut en probeert het te geven en te ontvangen, ook al kan het nog wat intimiderend zijn. Met de tijd krijgt u meer vertrouwen en spontaniteit!"
+        }
+      },
+      {
+        "min": 18,
+        "max": 33,
+        "level": 3,
+        "description": {
+          "fr": "Le feedback ne vous fait pas peur, bien au contraire ! Vous savez qu'il est un levier d'amélioration et d'apprentissage. Vous l'utilisez avec aisance et en faites un outil de communication positif et constructif.",
+          "en": "Feedback doesn't scare you, quite the opposite! You know it's a lever for improvement and learning. You use it with ease and make it a positive and constructive communication tool.",
+          "nl": "Feedback schrikt u niet af, integendeel! U weet dat het een hefboom is voor verbetering en leren. U gebruikt het met gemak en maakt er een positief en constructief communicatiemiddel van."
+        }
+      }
+    ],
+    "3": [
+      {
+        "min": -2,
+        "max": 4,
+        "level": 1,
+        "description": {
+          "fr": "Le feedback est rare dans votre environnement. Vos collègues et votre manager en donnent peu, et lorsqu'il y en a, il est parfois mal accueilli. Vous aimeriez une culture plus ouverte au feedback, mais ce n'est pas encore le cas. Peut-être pouvez-vous changer la donne ?",
+          "en": "Feedback is rare in your environment. Your colleagues and manager give little, and when it happens, it's sometimes poorly received. You'd like a more open feedback culture, but it's not there yet. Maybe you can change things?",
+          "nl": "Feedback is zeldzaam in uw omgeving. Uw collega's en manager geven weinig feedback, en als het gebeurt, wordt het soms slecht ontvangen. U zou graag een meer open feedbackcultuur willen, maar dat is nog niet het geval. Misschien kunt u het verschil maken?"
+        }
+      },
+      {
+        "min": 5,
+        "max": 10,
+        "level": 2,
+        "description": {
+          "fr": "Le feedback commence à faire partie des habitudes autour de vous. Certains en donnent régulièrement et le reçoivent plutôt bien, mais ce n'est pas encore un réflexe pour tout le monde. L'environnement s'améliore, et avec un peu plus de pratique, il deviendra plus naturel. Peut-être pouvez-vous inspirer vos pairs les moins à l'aise ?",
+          "en": "Feedback is starting to become a habit around you. Some give it regularly and it's generally well received, but it's not yet a reflex for everyone. The environment is improving, and with a bit more practice, it will become more natural. Maybe you can inspire your less comfortable peers?",
+          "nl": "Feedback begint een gewoonte te worden in uw omgeving. Sommigen geven het regelmatig en het wordt meestal goed ontvangen, maar het is nog geen reflex voor iedereen. De omgeving verbetert, en met wat meer oefening wordt het vanzelf natuurlijker. Misschien kunt u uw minder comfortabele collega's inspireren?"
+        }
+      },
+      {
+        "min": 11,
+        "max": 16,
+        "level": 3,
+        "description": {
+          "fr": "Le feedback fait pleinement partie de votre environnement de travail. Vos collègues et votre manager l'utilisent régulièrement et de manière constructive. Chacun sait en donner et en recevoir, ce qui crée une dynamique d'amélioration continue et de confiance.",
+          "en": "Feedback is fully part of your work environment. Your colleagues and manager use it regularly and constructively. Everyone knows how to give and receive it, creating a dynamic of continuous improvement and trust.",
+          "nl": "Feedback maakt volledig deel uit van uw werkomgeving. Uw collega's en manager gebruiken het regelmatig en op een constructieve manier. Iedereen weet hoe het te geven en te ontvangen, wat zorgt voor een dynamiek van continue verbetering en vertrouwen."
+        }
+      }
+    ]
+  }
+};
+
+const SUPPORTED_LANGS = ["fr", "en", "nl"];
+const DEFAULT_LANG = "en"; // Fallback si la langue navigateur n'est ni fr/nl
+const LANG_STORAGE_KEY = "feedback_lang";
+const STATE_STORAGE_KEY = "feedback_state_v2";
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  lang: DEFAULT_LANG,
+  answers: new Array(I18N.questions.length).fill(null),
+  currentIndex: 0
+};
+
+/* ============================================================
+   LANG MANAGEMENT
+   ============================================================ */
+function detectLanguage() {
+  // 1. localStorage (choix utilisateur précédent)
+  try {
+    const stored = localStorage.getItem(LANG_STORAGE_KEY);
+    if (stored && SUPPORTED_LANGS.includes(stored)) return stored;
+  } catch (e) {}
+
+  // 2. Détection navigateur
+  const nav = (navigator.language || navigator.userLanguage || "").toLowerCase();
+  if (nav.startsWith("fr")) return "fr";
+  if (nav.startsWith("nl")) return "nl";
+  if (nav.startsWith("en")) return "en";
+
+  // 3. Fallback
+  return DEFAULT_LANG;
+}
+
+function setLanguage(lang) {
+  if (!SUPPORTED_LANGS.includes(lang)) return;
+  state.lang = lang;
+  try { localStorage.setItem(LANG_STORAGE_KEY, lang); } catch (e) {}
+  document.documentElement.lang = lang;
+  applyTranslations();
+  updateLangSelectors();
+}
+
+function updateLangSelectors() {
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.lang === state.lang);
+  });
+}
+
+function t(key) {
+  const entry = I18N.ui[key];
+  if (!entry) return "[" + key + "]";
+  return entry[state.lang] || entry[DEFAULT_LANG] || "";
+}
+
+function applyTranslations() {
+  // Tous les éléments avec data-i18n (textContent)
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.dataset.i18n;
+    el.textContent = t(key);
+  });
+  // Tous les éléments avec data-i18n-html (innerHTML pour permettre <strong>)
+  document.querySelectorAll("[data-i18n-html]").forEach(el => {
+    const key = el.dataset.i18nHtml;
+    el.innerHTML = t(key);
+  });
+
+  // Listes de dimensions (intro + résultats)
+  const dimensionLists = [
+    document.getElementById("intro-dimensions"),
+    document.getElementById("results-dimensions")
+  ];
+  dimensionLists.forEach(ul => {
+    if (!ul) return;
+    ul.innerHTML = "";
+    ["1", "2", "3"].forEach(dim => {
+      const li = document.createElement("li");
+      li.textContent = I18N.dimensions[dim].title[state.lang];
+      ul.appendChild(li);
+    });
+  });
+
+  // Bouton "Suivant" / "Voir mes résultats" selon position
+  const btnNext = document.getElementById("btn-next");
+  if (btnNext) {
+    const isLast = state.currentIndex === I18N.questions.length - 1;
+    btnNext.textContent = isLast ? t("btn_see_results") : t("btn_next");
+  }
+
+  // Si on est sur l'écran question, re-render pour traduire la question affichée
+  const screenQuestion = document.getElementById("screen-question");
+  if (screenQuestion && screenQuestion.classList.contains("active")) {
+    renderQuestion(state.currentIndex);
+  }
+
+  // Si on est sur l'écran résultats, re-render pour traduire les cartes
+  const screenResults = document.getElementById("screen-results");
+  if (screenResults && screenResults.classList.contains("active")) {
+    renderResultsContent();
+  }
+}
+
+/* ============================================================
+   PERSISTENCE
+   ============================================================ */
+function saveState() {
+  // SCORM si disponible
+  if (typeof SCORM !== "undefined" && SCORM.isAvailable && SCORM.isAvailable()) {
+    SCORM.saveSuspendData(state);
+  }
+  try {
+    localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+function loadState() {
+  if (typeof SCORM !== "undefined" && SCORM.isAvailable && SCORM.isAvailable()) {
+    const scormData = SCORM.loadSuspendData();
+    if (scormData && Array.isArray(scormData.answers) && scormData.answers.length === I18N.questions.length) {
+      state.answers = scormData.answers;
+      state.currentIndex = scormData.currentIndex || 0;
+      return state.answers.some(a => a !== null);
+    }
+  }
+  try {
+    const raw = localStorage.getItem(STATE_STORAGE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.answers) && parsed.answers.length === I18N.questions.length) {
+      state.answers = parsed.answers;
+      state.currentIndex = parsed.currentIndex || 0;
+      return state.answers.some(a => a !== null);
+    }
+  } catch (e) {}
+  return false;
+}
+
+function clearState() {
+  state.answers = new Array(I18N.questions.length).fill(null);
+  state.currentIndex = 0;
+  if (typeof SCORM !== "undefined" && SCORM.isAvailable && SCORM.isAvailable()) {
+    SCORM.saveSuspendData(state);
+  }
+  try { localStorage.removeItem(STATE_STORAGE_KEY); } catch (e) {}
+}
+
+/* ============================================================
+   DOM REFS
+   ============================================================ */
+const screenIntro = document.getElementById("screen-intro");
+const screenQuestion = document.getElementById("screen-question");
+const screenResults = document.getElementById("screen-results");
+
+const btnStart = document.getElementById("btn-start");
+const btnResume = document.getElementById("btn-resume");
+const btnPrev = document.getElementById("btn-prev");
+const btnNext = document.getElementById("btn-next");
+const btnRestart = document.getElementById("btn-restart");
+
+const qDimensionTitle = document.getElementById("q-dimension-title");
+const qDimensionSubtitle = document.getElementById("q-dimension-subtitle");
+const qPercent = document.getElementById("q-percent");
+const qCompletedLabel = document.getElementById("q-completed-label");
+const qDimProgress = document.getElementById("q-dim-progress");
+const progressFill = document.getElementById("progress-fill");
+const qHelper = document.getElementById("q-helper");
+const qTitle = document.getElementById("q-title");
+const qOptions = document.getElementById("q-options");
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function showScreen(name) {
+  [screenIntro, screenQuestion, screenResults].forEach(s => s.classList.remove("active"));
+  if (name === "intro") screenIntro.classList.add("active");
+  else if (name === "question") screenQuestion.classList.add("active");
+  else if (name === "results") screenResults.classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderQuestion(index) {
+  const q = I18N.questions[index];
+  const lang = state.lang;
+  const dim = I18N.dimensions[q.dimension];
+
+  qDimensionTitle.textContent = dim.title[lang];
+  qDimensionSubtitle.textContent = t("dimension_word") + " " + q.dimension + " " + t("of_three");
+
+  const percent = Math.round(((index + 1) / I18N.questions.length) * 100);
+  qPercent.textContent = percent + "%";
+  qCompletedLabel.textContent = t("completed_label");
+  qDimProgress.textContent = t("dimension_word") + " " + q.dimension + " - " + dim.short[lang];
+  progressFill.style.width = percent + "%";
+
+  // Helper : soit défini sur la question, soit "Plusieurs réponses possibles" pour les checkbox
+  let helperText = "";
+  if (q.helper) {
+    helperText = q.helper[lang];
+  } else if (q.type === "checkbox") {
+    helperText = t("multiple_choice_helper");
+  }
+  qHelper.textContent = helperText;
+  qHelper.style.display = helperText ? "block" : "none";
+
+  qTitle.textContent = q.title[lang];
+
+  qOptions.innerHTML = "";
+  const currentAnswers = state.answers[index] || [];
+
+  q.options.forEach((opt, optIdx) => {
+    const label = document.createElement("label");
+    label.className = "option";
+    if (currentAnswers.includes(optIdx)) label.classList.add("selected");
+
+    const input = document.createElement("input");
+    input.type = q.type === "checkbox" ? "checkbox" : "radio";
+    input.name = "q-" + index;
+    input.value = optIdx;
+    input.checked = currentAnswers.includes(optIdx);
+
+    input.addEventListener("change", () => handleAnswerChange(index, optIdx, q.type));
+
+    const span = document.createElement("span");
+    span.textContent = opt.text[lang];
+
+    label.appendChild(input);
+    label.appendChild(span);
+    qOptions.appendChild(label);
+  });
+
+  btnPrev.disabled = index === 0;
+  btnPrev.style.visibility = index === 0 ? "hidden" : "visible";
+  updateNextButton(index);
+}
+
+function handleAnswerChange(qIndex, optIdx, type) {
+  if (type === "radio") {
+    state.answers[qIndex] = [optIdx];
+  } else {
+    const current = state.answers[qIndex] || [];
+    if (current.includes(optIdx)) {
+      state.answers[qIndex] = current.filter(i => i !== optIdx);
+    } else {
+      state.answers[qIndex] = [...current, optIdx];
+    }
+  }
+
+  document.querySelectorAll("#q-options .option").forEach((label, i) => {
+    if ((state.answers[qIndex] || []).includes(i)) label.classList.add("selected");
+    else label.classList.remove("selected");
+  });
+
+  updateNextButton(qIndex);
+  saveState();
+}
+
+function updateNextButton(index) {
+  const answer = state.answers[index];
+  const isLast = index === I18N.questions.length - 1;
+  const hasAnswer = Array.isArray(answer) && answer.length > 0;
+  btnNext.disabled = !hasAnswer;
+  btnNext.textContent = isLast ? t("btn_see_results") : t("btn_next");
+}
+
+btnStart.addEventListener("click", () => {
+  state.currentIndex = 0;
+  state.answers = new Array(I18N.questions.length).fill(null);
+  saveState();
+  showScreen("question");
+  renderQuestion(0);
+});
+
+btnResume.addEventListener("click", () => {
+  showScreen("question");
+  renderQuestion(state.currentIndex);
+});
+
+btnPrev.addEventListener("click", () => {
+  if (state.currentIndex > 0) {
+    state.currentIndex--;
+    saveState();
+    renderQuestion(state.currentIndex);
+  }
+});
+
+btnNext.addEventListener("click", () => {
+  if (state.currentIndex < I18N.questions.length - 1) {
+    state.currentIndex++;
+    saveState();
+    renderQuestion(state.currentIndex);
+  } else {
+    showResults();
+  }
+});
+
+btnRestart.addEventListener("click", () => {
+  clearState();
+  showScreen("intro");
+  btnResume.style.display = "none";
+});
+
+// Sélecteurs de langue (3 écrans)
+document.querySelectorAll(".lang-btn").forEach(btn => {
+  btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
+});
+
+/* ============================================================
+   CALCUL & AFFICHAGE DES RÉSULTATS
+   ============================================================ */
+function computeScores() {
+  const dimensionScores = { 1: 0, 2: 0, 3: 0 };
+  const dimensionMaxScores = { 1: 0, 2: 0, 3: 0 };
+  const dimensionMinScores = { 1: 0, 2: 0, 3: 0 };
+
+  I18N.questions.forEach((q, idx) => {
+    const selected = state.answers[idx] || [];
+    selected.forEach(optIdx => {
+      dimensionScores[q.dimension] += q.options[optIdx].points;
+    });
+
+    if (q.type === "radio") {
+      const points = q.options.map(o => o.points);
+      dimensionMaxScores[q.dimension] += Math.max(...points);
+      dimensionMinScores[q.dimension] += Math.min(...points);
+    } else {
+      q.options.forEach(o => {
+        if (o.points > 0) dimensionMaxScores[q.dimension] += o.points;
+        if (o.points < 0) dimensionMinScores[q.dimension] += o.points;
+      });
+    }
+  });
+
+  const globalScore = dimensionScores[1] + dimensionScores[2] + dimensionScores[3];
+  const globalMax = dimensionMaxScores[1] + dimensionMaxScores[2] + dimensionMaxScores[3];
+  const globalMin = dimensionMinScores[1] + dimensionMinScores[2] + dimensionMinScores[3];
+
+  return {
+    dimensions: dimensionScores,
+    dimensionMax: dimensionMaxScores,
+    dimensionMin: dimensionMinScores,
+    global: globalScore,
+    globalMax,
+    globalMin
+  };
+}
+
+function getLevelForDimension(dim, score) {
+  const thresholds = I18N.levels[String(dim)];
+  for (const t of thresholds) {
+    if (score >= t.min && score <= t.max) return t;
+  }
+  if (score < thresholds[0].min) return thresholds[0];
+  return thresholds[thresholds.length - 1];
+}
+
+function scoreToPercent(score, min, max) {
+  if (max === min) return 0;
+  const pct = ((score - min) / (max - min)) * 100;
+  return Math.max(0, Math.min(100, Math.round(pct)));
+}
+
+function getGlobalMessage(percent) {
+  if (percent >= 70) return t("global_msg_high");
+  if (percent >= 40) return t("global_msg_mid");
+  return t("global_msg_low");
+}
+
+// Re-render UNIQUEMENT le contenu dynamique des résultats (pas la jauge animée)
+function renderResultsContent() {
+  if (!state.lastScores) return;
+  const scores = state.lastScores;
+  const lang = state.lang;
+
+  const globalPercent = scoreToPercent(scores.global, scores.globalMin, scores.globalMax);
+  document.getElementById("global-score-message").textContent = getGlobalMessage(globalPercent);
+
+  const container = document.getElementById("dimensions-results");
+  container.innerHTML = "";
+
+  [1, 2, 3].forEach(dim => {
+    const score = scores.dimensions[dim];
+    const min = scores.dimensionMin[dim];
+    const max = scores.dimensionMax[dim];
+    const percent = scoreToPercent(score, min, max);
+    const level = getLevelForDimension(dim, score);
+    const levelTitle = t("level_word") + " " + level.level;
+
+    const card = document.createElement("div");
+    card.className = "dimension-card";
+    card.innerHTML =
+      '<div class="dimension-header">' +
+        '<div>' +
+          '<span class="dimension-label">' + t("dimension_word") + ' ' + dim + '</span>' +
+          '<div class="dimension-title" style="margin-top: 6px;">' + escapeHtml(I18N.dimensions[dim].title[lang]) + '</div>' +
+        '</div>' +
+        '<div class="dimension-score">' +
+          '<span class="dimension-score-value">' + percent + '</span>' +
+          '<span class="dimension-score-max">%</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="dimension-progress-bar">' +
+        '<div class="dimension-progress-fill" style="width: ' + percent + '%;"></div>' +
+      '</div>' +
+      '<span class="level-badge level-' + level.level + '">' + levelTitle + '</span>' +
+      '<p class="dimension-description">' + escapeHtml(level.description[lang]) + '</p>';
+    container.appendChild(card);
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function showResults() {
+  const scores = computeScores();
+  state.lastScores = scores;
+
+  const globalPercent = scoreToPercent(scores.global, scores.globalMin, scores.globalMax);
+
+  showScreen("results");
+  renderResultsContent();
+  animateGauge(globalPercent);
+
+  if (typeof SCORM !== "undefined" && SCORM.isAvailable && SCORM.isAvailable()) {
+    if (SCORM.setScore) SCORM.setScore(globalPercent, 100, 0);
+    if (SCORM.setCompleted) SCORM.setCompleted();
+  }
+}
+
+function animateGauge(targetPercent) {
+  const arcLength = 251.3;
+  const gaugeFill = document.getElementById("gauge-fill");
+  const gaugeNeedle = document.getElementById("gauge-needle");
+  const gaugeValue = document.getElementById("gauge-value");
+
+  gaugeFill.style.transition = "none";
+  gaugeFill.style.strokeDashoffset = arcLength;
+  gaugeNeedle.setAttribute("transform", "rotate(-90 100 130)");
+  gaugeValue.textContent = "0%";
+
+  void gaugeFill.getBoundingClientRect();
+
+  setTimeout(() => {
+    gaugeFill.style.transition = "stroke-dashoffset 1.4s cubic-bezier(0.34, 1.2, 0.64, 1)";
+    gaugeFill.style.strokeDashoffset = arcLength * (1 - targetPercent / 100);
+
+    const angle = -90 + (targetPercent / 100) * 180;
+    gaugeNeedle.setAttribute("transform", "rotate(" + angle + " 100 130)");
+
+    const duration = 1400;
+    const startTime = performance.now();
+    function step(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const currentValue = Math.round(targetPercent * eased);
+      gaugeValue.textContent = currentValue + "%";
+      if (progress < 1) requestAnimationFrame(step);
+      else gaugeValue.textContent = targetPercent + "%";
+    }
+    requestAnimationFrame(step);
+  }, 150);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init() {
+  if (typeof SCORM !== "undefined" && SCORM.init) SCORM.init();
+
+  // Détecter et appliquer la langue
+  state.lang = detectLanguage();
+
+  // Charger l'état (réponses précédentes)
+  const hasProgress = loadState();
+
+  // Appliquer les traductions à l'UI
+  setLanguage(state.lang);
+
+  if (hasProgress) btnResume.style.display = "inline-flex";
+}
+
+init();
+</script>
+
+</body>
+</html>
